@@ -1,0 +1,112 @@
+name: Deploy Eduworld Backend4
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME_PROD }}
+  DOCKER_PASSWORD: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN_PROD }}
+  HOST: ${{ secrets.SSH_HOST_TEMP }}
+  HOST_USERNAME: ${{ secrets.SSH_USERNAME_TEMP }}
+  SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_TEMP }}
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ env.DOCKER_USERNAME }}
+          password: ${{ env.DOCKER_PASSWORD }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: |
+            ${{ env.DOCKER_USERNAME }}/sear:latest
+          cache-from: type=registry,ref=${{ env.DOCKER_USERNAME }}/sear:buildcache
+          cache-to: type=registry,ref=${{ env.DOCKER_USERNAME }}/sear:buildcache,mode=max
+
+      - name: Deploy to Ubuntu server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ env.HOST }}
+          username: ${{ env.HOST_USERNAME }}
+          key: ${{ env.SSH_PRIVATE_KEY }}
+          script: |
+            echo "Deployment started at $(date '+%Y-%m-%d %H:%M:%S UTC')"
+            
+            # Create env directory if it doesn't exist
+            mkdir -p ~/env
+            
+            # Stop and remove existing container
+            echo "Stopping existing container..."
+            sudo docker stop sear || true
+            sudo docker rm sear || true
+            
+            # Pull latest image
+            echo "Pulling latest image..."
+            sudo docker pull ${{ env.DOCKER_USERNAME }}/sear:latest
+            
+            # Run new container with env file from server
+            echo "Starting new container..."
+            sudo docker run -d \
+              --name sear \
+              --restart unless-stopped \
+              -p 8082:5001 \
+              -v /home/ubuntu/v/.env:/usr/src/app/.env:ro \
+              ${{ env.DOCKER_USERNAME }}/sear:latest
+            
+            # Verify deployment
+            echo "Verifying deployment..."
+            sleep 10
+            
+            if sudo docker ps | grep -q sear; then
+              echo "✅ Container is running successfully"
+              echo "Container ID: $(sudo docker ps -q -f name=sear)"
+              echo "Container logs:"
+              sudo docker logs --tail 20 sear
+            else
+              echo "❌ Container failed to start"
+              echo "Error logs:"
+              sudo docker logs sear
+              exit 1
+            fi
+            
+            echo "Deployment completed at $(date '+%Y-%m-%d %H:%M:%S UTC')"
+      - name: Verify Deployment
+        uses: appleboy/ssh-action@master
+        if: success()
+        with:
+          host: ${{ env.HOST }}
+          username: ${{ env.HOST_USERNAME }}
+          key: ${{ env.SSH_PRIVATE_KEY }}
+          script: |
+            # Check container status
+            if sudo docker ps | grep -q sear; then
+              echo "Container Status: Running"
+              echo "Container Details:"
+              sudo docker inspect sear --format='Status: {{.State.Status}} | Started At: {{.State.StartedAt}}'
+              echo "Port Mapping:"
+              sudo docker port sear
+              
+              # Verify env file is mounted
+              echo "Checking environment file:"
+              sudo docker exec sear ls -la /usr/src/app/.env || echo "Environment file not found!"
+            else
+              echo "Container is not running"
+              exit 1
+            fi

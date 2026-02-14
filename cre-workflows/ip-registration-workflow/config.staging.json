@@ -1,0 +1,17 @@
+{
+  "schedule": "*/30 * * * * *",
+  "apiUrl": "https://api.github.com/repos/chainlink/cre-sdk-examples",
+  "evms": [
+    {
+      "chainName": "base-testnet-sepolia",
+      "consumerAddress": "0x7cd99Ccd031664C36Ae073052eD5e8af009a2818",
+      "gasLimit": "500000"
+    }
+  ],
+  "demoRegistration": {
+    "beneficiary": "0x0000000000000000000000000000000000000001",
+    "ipHash": "QmCREDemoHash123456789",
+    "metadata": "{\"name\":\"CRE Demo IP\",\"source\":\"github\"}",
+    "isEncrypted": false
+  }
+}

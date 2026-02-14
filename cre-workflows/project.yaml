@@ -1,0 +1,12 @@
+# CRE project: Casamigos IP tokenization workflows
+# See https://docs.chain.link/cre/reference/project-configuration-ts
+
+targets:
+  staging-settings:
+    evm:
+      base-testnet-sepolia:
+        rpc-url: https://sepolia.base.org
+  production-settings:
+    evm:
+      base-testnet-sepolia:
+        rpc-url: https://sepolia.base.org
