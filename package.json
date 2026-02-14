@@ -4,7 +4,8 @@
   "description": "bet platform on mantle",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:contract-features": "ts-node scripts/test-contract-features/run-all.ts"
   },
   "author": "",
   "license": "ISC",

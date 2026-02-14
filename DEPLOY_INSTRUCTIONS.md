@@ -39,7 +39,7 @@ To deploy **everything in one go** (ERC6551Registry, ERC6551Account, ModredIP, *
 .\deploy-full.ps1
 ```
 
-**With CRE Forwarder address** (get it from [Chainlink Forwarder Directory](https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory)):
+The CRE consumer uses the default Forwarder from `ignition/constants.ts` (`0x15fc6ae953e024d975e77382eeec56a9101f9f88`). To override:
 ```powershell
 $env:CRE_FORWARDER_ADDRESS = "0x..."; .\deploy-full.ps1
 ```
@@ -47,13 +47,31 @@ $env:CRE_FORWARDER_ADDRESS = "0x..."; .\deploy-full.ps1
 **Bash:**
 ```bash
 ./deploy-full.sh
-# or with forwarder:
+# or override forwarder:
 CRE_FORWARDER_ADDRESS=0x... ./deploy-full.sh
 ```
 
-**Note:** You do **not** deploy CRE’s Forwarder (KeystoneForwarder/MockForwarder)—Chainlink hosts it. You only need its address. If you omit `CRE_FORWARDER_ADDRESS`, the consumer is deployed with `0x0` and you can set the real forwarder later: `consumer.setForwarderAddress(forwarderAddress)`.
+**Note:** You do **not** deploy CRE’s Forwarder (KeystoneForwarder/MockForwarder)—Chainlink hosts it. You only need its address. Default forwarder is in `ignition/constants.ts`; override with `CRE_FORWARDER_ADDRESS` if needed.
 
 After full-stack deploy, the CLI prints addresses for `FullStackModule#modredIP` and `FullStackModule#consumer`. Put the **ModredIP** address in `app/src/deployed_addresses.json` as `"ModredIPModule#ModredIP"` (so the app keeps working). Add the consumer address there too if your app or CRE workflow needs it.
+
+### Redeploying to use the CRE forwarder
+
+The CRE forwarder address is set in **`ignition/constants.ts`** (`0x15fc6ae953e024d975e77382eeec56a9101f9f88`). To redeploy so the consumer uses it:
+
+1. **Redeploy the full stack** (recommended if you want a clean deploy):
+   ```powershell
+   .\deploy-full.ps1
+   ```
+   No env var needed; the script uses the default from `ignition/constants.ts`. Then update `app/src/deployed_addresses.json` and your CRE workflow config with the new ModredIP and consumer addresses.
+
+2. **Or redeploy only the CRE consumer** (if ModredIP is already deployed and you only need a new consumer with the correct forwarder):
+   ```powershell
+   npx hardhat ignition deploy ignition/modules/ModredIPCREConsumer.ts --network baseSepolia --parameters "{\"ModredIPCREConsumerModule\":{\"modredIPAddress\":\"<ModredIP_ADDRESS>\"}}"
+   ```
+   Then call `ModredIP.setCREProxy(newConsumerAddress)` from the ModredIP owner account and update `app/src/deployed_addresses.json` and CRE workflow config with the new consumer address.
+
+3. **Or update forwarder on an existing consumer** (if the consumer is already deployed and you only changed the constant): as the consumer owner, call `consumer.setForwarderAddress("0x15fc6ae953e024d975e77382eeec56a9101f9f88")`. No redeploy needed.
 
 ## Step 3: Update Contract Address
 

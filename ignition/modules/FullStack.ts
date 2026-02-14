@@ -1,23 +1,18 @@
 // This setup uses Hardhat Ignition to deploy the full stack:
 // - ERC6551Registry, ERC6551Account, ModredIP
-// - ModredIPCREConsumer (CRE consumer; requires Forwarder address from Chainlink)
+// - ModredIPCREConsumer (CRE consumer; Forwarder address from ignition/constants.ts)
 // - Wires ModredIP.setCREProxy(consumer)
 //
-// You do NOT deploy CRE's Forwarder (KeystoneForwarder/Forwarder)—Chainlink hosts it.
-// Get the Forwarder address for Base Sepolia from:
-// https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory
-//
-// Optional: set CRE_FORWARDER_ADDRESS before deploying, or pass forwarderAddress in parameters.
-// Default below is Base Sepolia KeystoneForwarder (for simulation); use KeystoneForwarder for production.
+// You do NOT deploy CRE's Forwarder—Chainlink hosts it. Override with CRE_FORWARDER_ADDRESS env or forwarderAddress param.
 
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
+import { CRE_FORWARDER_ADDRESS as DEFAULT_FORWARDER } from "../constants";
 
-const BASE_SEPOLIA_FORWARDER = "0x15fC6ae953E024d975e77382eEeC56A9101f9F88";
-const DEFAULT_FORWARDER = process.env.CRE_FORWARDER_ADDRESS || BASE_SEPOLIA_FORWARDER;
+const DEFAULT_FORWARDER_RESOLVED = process.env.CRE_FORWARDER_ADDRESS || DEFAULT_FORWARDER;
 
 const FullStackModule = buildModule("FullStackModule", (m) => {
   const deployer = m.getAccount(0);
-  const forwarderAddress = m.getParameter("forwarderAddress", DEFAULT_FORWARDER) as unknown as string;
+  const forwarderAddress = m.getParameter("forwarderAddress", DEFAULT_FORWARDER_RESOLVED) as unknown as string;
 
   const registry = m.contract("ERC6551Registry");
   const accountImplementation = m.contract("ERC6551Account");

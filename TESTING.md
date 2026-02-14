@@ -6,7 +6,21 @@ You can test (1) the **smart contracts** locally or on Base Sepolia, and (2) the
 
 ## 1. Test the smart contracts
 
-### Option A: Local Hardhat tests (no chain)
+### Option A: Contract feature script (same features as frontend, on Base Sepolia)
+
+From the project root, one wallet runs through the main contract flows (register IP, mint license, pay revenue, claim royalties, register arbitrator, etc.):
+
+```bash
+# Set a wallet that has Base Sepolia ETH (for gas and small value for payRevenue/registerArbitrator)
+$env:TEST_PRIVATE_KEY = "your_private_key_hex"   # PowerShell
+# export TEST_PRIVATE_KEY=your_private_key_hex  # Bash
+
+npm run test:contract-features
+```
+
+See `scripts/test-contract-features/README.md` for details and optional DISPUTER_PRIVATE_KEY / ARBITRATOR_PRIVATE_KEY for dispute flows.
+
+### Option B: Local Hardhat tests (no chain)
 
 From the project root:
 
@@ -20,7 +34,7 @@ npx hardhat test
 
 Runs `test/ModredIP.ts` and `test/Marketpulse.ts` on an in-memory Hardhat network (no Base Sepolia needed).
 
-### Option B: Test on Base Sepolia via the app
+### Option C: Test on Base Sepolia via the app
 
 1. **Backend:** From `backend/`, set `WALLET_PRIVATE_KEY` (and optional `RPC_PROVIDER_URL`) in `.env`, then:
    ```bash

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Deploy FULL STACK to Base Sepolia: ModredIP + ERC6551 + CRE Consumer
 # Requires: DEPLOYER_PRIVATE_KEY
-# Optional: CRE_FORWARDER_ADDRESS (from https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory)
+# CRE Forwarder: default in ignition/constants.ts. Override with CRE_FORWARDER_ADDRESS.
 
 set -e
 
@@ -17,7 +17,7 @@ fi
 echo "Deployer key found."
 
 if [ -z "$CRE_FORWARDER_ADDRESS" ]; then
-    echo "CRE_FORWARDER_ADDRESS not set - consumer will use 0x0 (set later via consumer.setForwarderAddress)"
+    echo "Using default CRE Forwarder from ignition/constants.ts"
     echo ""
     npx hardhat ignition deploy ignition/modules/FullStack.ts --network baseSepolia
 else

@@ -31,18 +31,18 @@ npx hardhat ignition deploy ignition/modules/ModredIP.ts --network baseSepolia
 
 ### 2. Deploy ModredIPCREConsumer
 
-Get the **KeystoneForwarder** (production) or **MockKeystoneForwarder** (simulation) address for your chain from the [CRE Forwarder Directory](https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory).
+The default **Forwarder** address for Base Sepolia is set in `ignition/constants.ts` (`0x15fc6ae953e024d975e77382eeec56a9101f9f88`). Override with `CRE_FORWARDER_ADDRESS` or see the [CRE Forwarder Directory](https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory).
 
 ```bash
-# Example: Base Sepolia (replace with actual forwarder from the directory)
-export CRE_FORWARDER_ADDRESS=0x...   # KeystoneForwarder for Base Sepolia
+# Optional: override forwarder
+export CRE_FORWARDER_ADDRESS=0x...
 
 npx hardhat ignition deploy ignition/modules/ModredIPCREConsumer.ts \
   --network baseSepolia \
-  --parameters '{"ModredIPCREConsumerModule":{"modredIPAddress":"0xYOUR_MODRED_IP_ADDRESS","forwarderAddress":"'$CRE_FORWARDER_ADDRESS'"}}'
+  --parameters '{"ModredIPCREConsumerModule":{"modredIPAddress":"0xYOUR_MODRED_IP_ADDRESS","forwarderAddress":"'${CRE_FORWARDER_ADDRESS:-0x15fc6ae953e024d975e77382eeec56a9101f9f88}'"}}'
 ```
 
-Or deploy with Hardhat console/script, passing `(forwarderAddress, modredIPAddress)` to the consumer constructor.
+Or use the full-stack deploy (see DEPLOY_INSTRUCTIONS.md), which deploys the consumer with the default forwarder.
 
 ### 3. Set CRE proxy on ModredIP
 
