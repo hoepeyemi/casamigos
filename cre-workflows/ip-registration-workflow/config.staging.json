@@ -4,7 +4,7 @@
   "evms": [
     {
       "chainName": "base-testnet-sepolia",
-      "consumerAddress": "0x7cd99Ccd031664C36Ae073052eD5e8af009a2818",
+      "consumerAddress": "0x7B74726e0723DCc60f260dA1708082e2E8255543",
       "gasLimit": "500000"
     }
   ],

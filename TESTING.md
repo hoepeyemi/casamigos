@@ -10,25 +10,47 @@ You can test (1) the **smart contracts** locally or on Base Sepolia, and (2) the
 
 From the project root, one wallet runs through the main contract flows (register IP, mint license, pay revenue, claim royalties, register arbitrator, etc.):
 
-```bash
-# Set a wallet that has Base Sepolia ETH (for gas and small value for payRevenue/registerArbitrator)
-$env:TEST_PRIVATE_KEY = "your_private_key_hex"   # PowerShell
-# export TEST_PRIVATE_KEY=your_private_key_hex  # Bash
+**Using a `.env` file (recommended):** copy `.env.example` to `.env` in the project root, or create `.env` with:
 
+```
+# Required: wallet with Base Sepolia ETH (for gas and small value for payRevenue/registerArbitrator)
+TEST_PRIVATE_KEY=your_private_key_hex_without_0x
+
+# Optional: override RPC
+# RPC_URL=https://sepolia.base.org
+
+# Optional: for dispute/arbitration steps (second and third wallets)
+# DISPUTER_PRIVATE_KEY=...
+# ARBITRATOR_PRIVATE_KEY=...
+```
+
+Then run:
+
+```bash
 npm run test:contract-features
 ```
 
-See `scripts/test-contract-features/README.md` for details and optional DISPUTER_PRIVATE_KEY / ARBITRATOR_PRIVATE_KEY for dispute flows.
+The script loads `.env` from the project root automatically. You can also set env vars in the shell instead:
+
+```bash
+$env:TEST_PRIVATE_KEY = "your_private_key_hex"   # PowerShell
+export TEST_PRIVATE_KEY=your_private_key_hex    # Bash
+npm run test:contract-features
+```
+
+See `scripts/test-contract-features/README.md` for details.
 
 ### Option B: Local Hardhat tests (no chain)
 
-From the project root:
+From the project root you can set `DEPLOYER_PRIVATE_KEY` in the same root `.env` (dummy key is fine; tests use local network):
+
+```
+DEPLOYER_PRIVATE_KEY=0000000000000000000000000000000000000000000000000000000000000001
+```
+
+Then run:
 
 ```bash
-# Set a dummy key if Hardhat config requires it (tests use local network)
-$env:DEPLOYER_PRIVATE_KEY = "0000000000000000000000000000000000000000000000000000000000000001"   # PowerShell
-# export DEPLOYER_PRIVATE_KEY=0000000000000000000000000000000000000000000000000000000000000001  # Bash
-
 npx hardhat test
 ```
 
@@ -58,7 +80,7 @@ The workflow calls an external API then sends a report to **ModredIPCREConsumer*
 
 - **Bun** 1.2.21+  
 - **CRE CLI** installed and **logged in** (`cre login`)
-- **Consumer address** in workflow config (already set to `0x7cd99Ccd031664C36Ae073052eD5e8af009a2818`)
+- **Consumer address** in workflow config (already set to `0x7B74726e0723DCc60f260dA1708082e2E8255543`)
 
 ### Simulation only (no onchain tx)
 
@@ -91,7 +113,7 @@ To have the workflow actually call the consumer and register an IP on Base Sepol
    cre workflow simulate ip-registration-workflow --target staging-settings --broadcast
    ```
 
-The workflow will submit a signed report to the Forwarder; the Forwarder will call your **ModredIPCREConsumer** at `0x7cd99Ccd031664C36Ae073052eD5e8af009a2818`, which will call **ModredIP.registerIPFor(beneficiary, ...)**. Check the new NFT for `beneficiary` on Base Sepolia (e.g. on Basescan).
+The workflow will submit a signed report to the Forwarder; the Forwarder will call your **ModredIPCREConsumer** at `0x7B74726e0723DCc60f260dA1708082e2E8255543`, which will call **ModredIP.registerIPFor(beneficiary, ...)**. Check the new NFT for `beneficiary` on Base Sepolia (e.g. on Basescan).
 
 ---
 

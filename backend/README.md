@@ -32,7 +32,7 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
     "ipHash": "ipfs://Qm...",
     "metadata": "{\"name\":\"IP Asset Name\",\"description\":\"...\",...}",
     "isEncrypted": false,
-    "searContractAddress": "0xB9d0C2E1E340d4c6E83ADB174d5779aD67ac9972",
+    "searContractAddress": "0xF28C97F2168Cd26483Bb6230f25dDD5066C68655",
     "skipContractCall": false
   }
   ```
@@ -49,7 +49,7 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
     "duration": 86400,
     "commercialUse": true,
     "terms": "{\"transferable\":true,\"commercialAttribution\":true,...}",
-    "searContractAddress": "0xB9d0C2E1E340d4c6E83ADB174d5779aD67ac9972"
+    "searContractAddress": "0xF28C97F2168Cd26483Bb6230f25dDD5066C68655"
   }
   ```
 - **Validation**: Automatically checks if a license already exists for the IP asset
@@ -137,7 +137,7 @@ The backend includes advanced automatic retry logic for blockchain transactions:
 - ✅ Added license validation (one license per IP)
 - ✅ Improved nonce handling - removed explicit nonce setting, let viem handle automatically
 - ✅ Enhanced error messages and user feedback
-- ✅ Updated contract address (0xB9d0C2E1E340d4c6E83ADB174d5779aD67ac9972)
+- ✅ Updated contract address (0xF28C97F2168Cd26483Bb6230f25dDD5066C68655)
 - ✅ HTTP 410 error detection and handling for Mantle RPC `pending` blockTag limitation
 - ✅ "Already known" transaction error detection and recovery
 - ✅ Transaction hash recovery from recent blocks (searches last 20 blocks)

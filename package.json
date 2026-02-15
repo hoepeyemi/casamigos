@@ -16,6 +16,7 @@
     "typechain": "^8.3.2"
   },
   "dependencies": {
+    "dotenv": "^16.4.5",
     "@nomicfoundation/hardhat-ignition": "^0.15.13",
     "@nomicfoundation/hardhat-ignition-viem": "^0.15.0",
     "@nomicfoundation/hardhat-network-helpers": "^1.0.0",

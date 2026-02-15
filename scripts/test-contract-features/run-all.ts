@@ -125,14 +125,15 @@ async function main() {
 
   // --- Claim royalties (frontend: claimRoyalties) ---
   log("10. claimRoyalties(tokenId)");
-  const claimTx = await walletClient.writeContract({
+  const claimTxHash = await walletClient.writeContract({
     address: modredIPAddress,
     abi: MODRED_IP_ABI,
     functionName: "claimRoyalties",
     args: [BigInt(tokenId)],
     account: mainAccount,
   });
-  log("   tx: " + claimTx);
+  log("   tx: " + claimTxHash);
+  await publicClient.waitForTransactionReceipt({ hash: claimTxHash });
 
   // --- Raise dispute (frontend: raiseDispute) - optional, needs second wallet as disputer ---
   log("11. raiseDispute - skipped unless DISPUTER_PRIVATE_KEY set (use second wallet to dispute this token)");
@@ -140,7 +141,7 @@ async function main() {
   // --- Register arbitrator (frontend: registerArbitrator) ---
   log("12. registerArbitrator() with MIN_ARBITRATOR_STAKE");
   try {
-    const regArbTx = await walletClient.writeContract({
+    const regArbTxHash = await walletClient.writeContract({
       address: modredIPAddress,
       abi: MODRED_IP_ABI,
       functionName: "registerArbitrator",
@@ -148,7 +149,8 @@ async function main() {
       value: minStake,
       account: mainAccount,
     });
-    log("   tx: " + regArbTx);
+    log("   tx: " + regArbTxHash);
+    await publicClient.waitForTransactionReceipt({ hash: regArbTxHash });
   } catch (e: any) {
     log("   (may already be registered) " + (e?.message || e));
   }

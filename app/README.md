@@ -149,10 +149,10 @@ A React-based frontend for the Casamigos intellectual property management system
 ## Contract Addresses
 
 Current deployed contract addresses are stored in `src/deployed_addresses.json`:
-- **ModredIP**: `0xB9d0C2E1E340d4c6E83ADB174d5779aD67ac9972` (ModredIPModule#ModredIP)
-- **ERC6551Registry**: `0x88F07d65FffEF86eF02E345036Cc9b7d826f3f45`
-- **ERC6551Account**: `0x90f5EdDBef5A6c7Dd82E0A9056d0944Da3ABB94B`
-- **ModredIPCREConsumer**: `0x7cd99Ccd031664C36Ae073052eD5e8af009a2818` (CRE)
+- **ModredIP**: `0xF28C97F2168Cd26483Bb6230f25dDD5066C68655` (ModredIPModule#ModredIP)
+- **ERC6551Registry**: `0x0f7a9D776e6823d8aC0b82334Df461caBb878905`
+- **ERC6551Account**: `0xDcD569eF07d7b04039e1331D78f8dbC073303aeE`
+- **ModredIPCREConsumer**: `0x7B74726e0723DCc60f260dA1708082e2E8255543` (CRE)
 
 **Note**: The contract key "ModredIPModule#ModredIP" is maintained for compatibility, but the application name is "Casamigos".
 

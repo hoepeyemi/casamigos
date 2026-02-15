@@ -101,7 +101,7 @@ async function main() {
     console.log('=' .repeat(60));
 
     const v1Address = '0x0734d90FA1857C073c4bf1e57f4F4151BE2e9f82' as Address;
-    const v2Address = '0xB9d0C2E1E340d4c6E83ADB174d5779aD67ac9972' as Address;
+    const v2Address = '0xF28C97F2168Cd26483Bb6230f25dDD5066C68655' as Address;
 
     const v1HasFunction = await verifyContract(v1Address, 'Sear Module V1');
     const v2HasFunction = await verifyContract(v2Address, 'Sear Module V2');

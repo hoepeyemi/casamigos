@@ -10,6 +10,18 @@ These scripts exercise **the same contract features the frontend uses**, so you 
 2. **Wallet with Base Sepolia ETH**  
    Set `TEST_PRIVATE_KEY` (hex, with or without `0x`) to a key that has testnet ETH for gas and optional value (e.g. payRevenue, registerArbitrator).
 
+   **Recommended:** put it in a **`.env`** file in the **project root** (the script loads it automatically):
+
+   ```
+   TEST_PRIVATE_KEY=your_private_key_hex_without_0x
+   # Optional:
+   # RPC_URL=https://sepolia.base.org
+   # DISPUTER_PRIVATE_KEY=...
+   # ARBITRATOR_PRIVATE_KEY=...
+   ```
+
+   Or set in the shell:
+
    ```bash
    # PowerShell
    $env:TEST_PRIVATE_KEY = "your_private_key_hex"
@@ -19,7 +31,7 @@ These scripts exercise **the same contract features the frontend uses**, so you 
    ```
 
 3. **Optional: RPC**  
-   Default RPC is `https://sepolia.base.org`. Override with `RPC_URL` if needed.
+   Default RPC is `https://sepolia.base.org`. Override with `RPC_URL` in `.env` or the environment if needed.
 
 ## Run all features
 

@@ -2,8 +2,10 @@
  * Config for contract feature test scripts.
  * Reads deployed ModredIP address; uses TEST_PRIVATE_KEY for the main wallet.
  * Optional: DISPUTER_PRIVATE_KEY, ARBITRATOR_PRIVATE_KEY for dispute/arbitration flow.
+ * All env vars can be set in a root .env file (loaded automatically).
  */
 
+import "dotenv/config";
 import { createPublicClient, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import * as fs from "fs";
