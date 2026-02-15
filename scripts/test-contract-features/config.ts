@@ -50,13 +50,62 @@ export function getConfig() {
     transport,
   });
 
+  const disputerAccount = disputerKey ? getAccount(disputerKey) : null;
+  const disputerWalletClient =
+    disputerAccount ?
+      createWalletClient({
+        account: disputerAccount,
+        chain: BASE_SEPOLIA,
+        transport,
+      })
+    : null;
+
   return {
     chain: BASE_SEPOLIA,
     modredIPAddress: modredIP as `0x${string}`,
     publicClient,
     mainAccount,
     walletClient,
-    disputer: disputerKey ? getAccount(disputerKey) : null,
+    disputer: disputerAccount,
+    disputerWalletClient,
     arbitrator: arbitratorKey ? getAccount(arbitratorKey) : null,
+  };
+}
+
+/** Inputs for IP asset, license, and payRevenue (from env or defaults). See .env.example and TESTING.md. */
+export function getTestInputs() {
+  const ipHashRaw = process.env.TEST_IP_HASH?.trim();
+  const ipHashForContract =
+    ipHashRaw && ipHashRaw.length > 0
+      ? ipHashRaw.startsWith("ipfs://")
+        ? ipHashRaw
+        : ipHashRaw.includes("/")
+          ? ipHashRaw
+          : `ipfs://${ipHashRaw}` // plain CID -> ipfs://CID like frontend
+      : "ipfs://QmTestScriptHash" + Date.now();
+
+  const metadataRaw = process.env.TEST_IP_METADATA;
+  const metadata =
+    metadataRaw && metadataRaw.trim()
+      ? metadataRaw.trim()
+      : '{"name":"Test IP","description":"Created via contract test script"}';
+  const isEncrypted = process.env.TEST_IP_ENCRYPTED === "true" || process.env.TEST_IP_ENCRYPTED === "1";
+
+  const royaltyBps = Math.min(10000, Math.max(0, parseInt(process.env.TEST_LICENSE_ROYALTY_BPS ?? "1000", 10) || 1000));
+  const durationSec = parseInt(process.env.TEST_LICENSE_DURATION_SECONDS ?? "2592000", 10) || 2592000; // 30 days
+  const commercialUse = process.env.TEST_LICENSE_COMMERCIAL !== "false" && process.env.TEST_LICENSE_COMMERCIAL !== "0";
+  const terms = process.env.TEST_LICENSE_TERMS?.trim() || "test terms";
+
+  const payRevenueEth = process.env.TEST_PAY_REVENUE_ETH?.trim() || "0.001";
+
+  return {
+    ipHash: ipHashForContract,
+    metadata,
+    isEncrypted,
+    royaltyBps: BigInt(royaltyBps),
+    durationSec: BigInt(durationSec),
+    commercialUse,
+    terms,
+    payRevenueEth,
   };
 }

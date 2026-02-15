@@ -14,10 +14,19 @@ These scripts exercise **the same contract features the frontend uses**, so you 
 
    ```
    TEST_PRIVATE_KEY=your_private_key_hex_without_0x
-   # Optional:
-   # RPC_URL=https://sepolia.base.org
-   # DISPUTER_PRIVATE_KEY=...
-   # ARBITRATOR_PRIVATE_KEY=...
+   # Optional: your IPFS link and metadata (like the frontend)
+   # TEST_IP_HASH=ipfs://QmYourImageCID
+   # TEST_IP_METADATA={"name":"My IP","description":"..."}
+   # TEST_IP_ENCRYPTED=false
+   # Optional: license (royalty basis points, duration seconds, commercial, terms)
+   # TEST_LICENSE_ROYALTY_BPS=1000
+   # TEST_LICENSE_DURATION_SECONDS=2592000
+   # TEST_LICENSE_COMMERCIAL=true
+   # TEST_LICENSE_TERMS=your terms
+   # Optional: payRevenue amount in ETH
+   # TEST_PAY_REVENUE_ETH=0.001
+   # RPC_URL=...
+   # DISPUTER_PRIVATE_KEY=... ARBITRATOR_PRIVATE_KEY=...
    ```
 
    Or set in the shell:
@@ -50,17 +59,17 @@ npx ts-node scripts/test-contract-features/run-all.ts
 This will:
 
 - **Read** nextTokenId, nextLicenseId, MIN_ARBITRATOR_STAKE
-- **registerIP** – register a test IP asset
+- **registerIP** – register an IP asset (uses `TEST_IP_HASH`, `TEST_IP_METADATA`, `TEST_IP_ENCRYPTED` from `.env`, or defaults)
 - **getIPAsset** – read it back
-- **mintLicense** – mint a license for that IP (same account as licensee)
+- **mintLicense** – mint a license for that IP (uses `TEST_LICENSE_*` from `.env`, or defaults)
 - **getLicense** – read it back
-- **payRevenue** – send 0.001 ETH to the IP
+- **payRevenue** – send ETH to the IP (amount from `TEST_PAY_REVENUE_ETH`, default 0.001)
 - **getRoyaltyInfo** – read royalty info
 - **claimRoyalties** – claim royalties for the account
 - **registerArbitrator** – register as arbitrator (if not already)
 - **getAllArbitrators** / **getActiveArbitratorsCount** – read arbitrator state
 
-So in one run you cover the main flows that the frontend uses: register IP → mint license → pay revenue → claim royalties, plus arbitrator registration and reads.
+You can put a **real IPFS image link** (e.g. from Pinata or any IPFS gateway) in `TEST_IP_HASH` and custom metadata in `TEST_IP_METADATA` so the registered IP matches what you’d create in the frontend. Same for license terms and royalty.
 
 ## Optional: dispute and arbitration
 

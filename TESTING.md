@@ -19,6 +19,20 @@ TEST_PRIVATE_KEY=your_private_key_hex_without_0x
 # Optional: override RPC
 # RPC_URL=https://sepolia.base.org
 
+# Optional: IP asset (like frontend – IPFS link and metadata)
+# TEST_IP_HASH=ipfs://QmYourImageCID
+# TEST_IP_METADATA={"name":"My IP","description":"..."}
+# TEST_IP_ENCRYPTED=false
+
+# Optional: license (royalty in basis points 10000=100%, duration in seconds)
+# TEST_LICENSE_ROYALTY_BPS=1000
+# TEST_LICENSE_DURATION_SECONDS=2592000
+# TEST_LICENSE_COMMERCIAL=true
+# TEST_LICENSE_TERMS=your terms
+
+# Optional: payRevenue amount in ETH
+# TEST_PAY_REVENUE_ETH=0.001
+
 # Optional: for dispute/arbitration steps (second and third wallets)
 # DISPUTER_PRIVATE_KEY=...
 # ARBITRATOR_PRIVATE_KEY=...
