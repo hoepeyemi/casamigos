@@ -58,6 +58,48 @@ This demonstrates:
 - **External API**: workflow calls `apiUrl` (e.g. GitHub API) via CRE HTTP capability.
 - **Blockchain**: workflow submits a signed report to **ModredIPCREConsumer** on Base Sepolia (register IP for `demoRegistration.beneficiary`).
 
+## How to test the CRE integration (step-by-step)
+
+1. **Ensure contracts are deployed and wired**
+   - **ModredIP** and **ModredIPCREConsumer** must be deployed on Base Sepolia (e.g. via `npx hardhat ignition deploy ... --network baseSepolia` or your full-stack deploy).
+   - **ModredIP** must have the consumer set as CRE proxy: `ModredIP.setCREProxy(ModredIPCREConsumerAddress)` (owner only). See `CRE_INTEGRATION.md` and `ignition/modules/ModredIPCREConsumer.ts`.
+   - Consumer address is in `app/src/deployed_addresses.json` as `ModredIPModule#ModredIPCREConsumer`; use that in the workflow config.
+
+2. **Install CRE CLI and log in**
+   - Install: [CRE CLI](https://docs.chain.link/cre/getting-started/cli-installation/macos-linux).
+   - Run `cre login` and complete the login flow.
+
+3. **Configure the workflow**
+   - In `cre-workflows/ip-registration-workflow/config.staging.json`:
+     - `evms[0].consumerAddress`: your **ModredIPCREConsumer** address (e.g. from `deployed_addresses.json`).
+     - `demoRegistration.beneficiary`: an address that will receive the demo IP NFT (use your own wallet or a test address).
+   - Optional: set `demoRegistration.ipHash` and `demoRegistration.metadata` to custom values.
+
+4. **Secrets for onchain write**
+   - In `cre-workflows/.env` (create the file if it doesn’t exist):
+     - `CRE_ETH_PRIVATE_KEY=<hex_private_key>` for an account with Base Sepolia ETH (used when running with `--broadcast`).
+
+5. **Run a dry-run (no chain write)**
+   - From repo root:
+     ```bash
+     cd cre-workflows
+     cre workflow simulate ip-registration-workflow --target staging-settings
+     ```
+   - You should see the workflow fetch the external API and build the report. It will **not** send a transaction unless you add `--broadcast`.
+
+6. **Run with broadcast (real onchain registration)**
+   - From `cre-workflows/`:
+     ```bash
+     cre workflow simulate ip-registration-workflow --target staging-settings --broadcast
+     ```
+   - The workflow will submit a signed report to **ModredIPCREConsumer**; the consumer will call **ModredIP.registerIPFor(beneficiary, ipHash, metadata, isEncrypted)**. Check the logs for the transaction hash.
+
+7. **Verify on-chain**
+   - On [Basescan (Base Sepolia)](https://sepolia.basescan.org/), look up the ModredIP contract and confirm a new IP was registered (e.g. check `nextTokenId` or events).
+   - Optionally call `ModredIP.getIPAsset(tokenId)` for the new token and confirm `beneficiary` is the owner.
+
+If simulation fails with "consumerAddress not configured", set `evms[0].consumerAddress` in `config.staging.json`. If broadcast fails, ensure `CRE_ETH_PRIVATE_KEY` is set and the account has Base Sepolia ETH.
+
 ## Workflow behavior
 
 - **Trigger:** Cron (schedule in `config.staging.json` / `config.production.json`).

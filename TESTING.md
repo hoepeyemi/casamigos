@@ -91,7 +91,7 @@ Contract addresses are read from `app/src/deployed_addresses.json` (already set 
 
 ## 2. Test the CRE workflow
 
-The workflow calls an external API then sends a report to **ModredIPCREConsumer** on Base Sepolia to register an IP for `demoRegistration.beneficiary`.
+The workflow calls an external API then sends a report to **ModredIPCREConsumer** on Base Sepolia to register an IP for `demoRegistration.beneficiary`. For a full step-by-step (contracts, config, verify on-chain), see **cre-workflows/README.md** → section **How to test the CRE integration**.
 
 ### Prerequisites
 
