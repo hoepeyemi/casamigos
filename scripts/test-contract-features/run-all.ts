@@ -59,7 +59,7 @@ async function main() {
     account: mainAccount,
   });
   log("   tx: " + hash);
-  await publicClient.waitForTransactionReceipt({ hash });
+  const registerReceipt = await publicClient.waitForTransactionReceipt({ hash });
   log("   tx confirmed");
 
   const tokenId = await publicClient.readContract({
@@ -68,6 +68,33 @@ async function main() {
     functionName: "nextTokenId",
   }).then((n) => Number(n) - 1);
   log("   new tokenId = " + tokenId);
+
+  // Register this IP with Yakoa so the infringement check can find it (same as frontend → backend flow)
+  if (process.env.RUN_INFRINGEMENT_CHECK !== "false") {
+    const path = require("path");
+    const { execSync } = require("child_process");
+    const backendDir = path.join(__dirname, "..", "..", "backend");
+    try {
+      execSync("npx ts-node src/scripts/register-ip-to-yakoa.ts", {
+        cwd: backendDir,
+        stdio: "inherit",
+        env: {
+          ...process.env,
+          MODRED_IP_CONTRACT_ADDRESS: modredIPAddress,
+          TOKEN_ID: String(tokenId),
+          TX_HASH: hash,
+          BLOCK_NUMBER: String(registerReceipt.blockNumber),
+          CREATOR_ID: mainAccount.address,
+          IP_HASH: inputs.ipHash,
+          METADATA: inputs.metadata,
+          IS_ENCRYPTED: inputs.isEncrypted ? "true" : "false",
+        },
+      });
+      log("   Yakoa registration requested for token " + tokenId);
+    } catch {
+      log("   (Yakoa registration skipped or failed: ensure backend/.env has YAKOA_API_KEY, YAKOA_SUBDOMAIN, YAKOA_NETWORK)");
+    }
+  }
 
   // --- getIPAsset ---
   log("5. getIPAsset(tokenId)");
