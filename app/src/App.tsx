@@ -1863,17 +1863,17 @@ export default function App({ thirdwebClient }: AppProps) {
       // Show breakdown in notification
       if (royaltyBreakdown) {
         const breakdownText = [
-          `Total: ${royaltyBreakdown.totalAmount} MNT`,
-          `Platform Fee: ${royaltyBreakdown.platformFee.toFixed(6)} MNT (2.5%)`,
+          `Total: ${royaltyBreakdown.totalAmount} ETH`,
+          `Platform Fee: ${royaltyBreakdown.platformFee.toFixed(6)} ETH (2.5%)`,
           ...royaltyBreakdown.licenseRoyalties.map(
-            lr => `License ${lr.licenseId}: ${lr.amount.toFixed(6)} MNT (${lr.royaltyPercentage}%)`
+            lr => `License ${lr.licenseId}: ${lr.amount.toFixed(6)} ETH (${lr.royaltyPercentage}%)`
           ),
-          `IP Owner: ${royaltyBreakdown.ipOwnerShare.toFixed(6)} MNT`,
+          `IP Owner: ${royaltyBreakdown.ipOwnerShare.toFixed(6)} ETH`,
         ].join('\n');
         notifyInfo('Payment Breakdown', breakdownText);
       }
 
-      notifyInfo('Processing Payment', `Paying ${paymentAmount} MNT in revenue...`);
+      notifyInfo('Processing Payment', `Paying ${paymentAmount} ETH in revenue...`);
 
       const contract = getContract({
         abi: SEAR_ABI,
@@ -1901,7 +1901,7 @@ export default function App({ thirdwebClient }: AppProps) {
       });
 
       // Show success notification
-      notifySuccess('Payment Successful', `Successfully paid ${paymentAmount} MNT in revenue!`);
+      notifySuccess('Payment Successful', `Successfully paid ${paymentAmount} ETH in revenue!`);
 
       // Reset form
       setPaymentAmount("");
@@ -1982,7 +1982,7 @@ export default function App({ thirdwebClient }: AppProps) {
 
       // Show success notification with amount
       const claimedAmount = accumulatedRoyalties.get(claimTokenId) || 0n;
-      notifySuccess('Royalties Claimed', `Successfully claimed ${formatEther(claimedAmount)} MNT!`);
+      notifySuccess('Royalties Claimed', `Successfully claimed ${formatEther(claimedAmount)} ETH!`);
 
       // Update accumulated royalties
       setAccumulatedRoyalties((prev) => {
@@ -2092,7 +2092,7 @@ export default function App({ thirdwebClient }: AppProps) {
 
     try {
       setLoading(true);
-      notifyInfo('Registering Arbitrator', `Registering with ${minArbitratorStake} MNT stake...`);
+      notifyInfo('Registering Arbitrator', `Registering with ${minArbitratorStake} ETH stake...`);
 
       const contract = getContract({
         abi: SEAR_ABI,
@@ -2181,7 +2181,7 @@ export default function App({ thirdwebClient }: AppProps) {
         return;
       }
 
-      notifyInfo('Unstaking Arbitrator', `Withdrawing ${formatEther(stake)} MNT stake...`);
+      notifyInfo('Unstaking Arbitrator', `Withdrawing ${formatEther(stake)} ETH stake...`);
 
       const preparedCall = await prepareContractCall({
         contract,
@@ -2200,7 +2200,7 @@ export default function App({ thirdwebClient }: AppProps) {
         transactionHash: transaction.transactionHash,
       });
 
-      notifySuccess('Stake Withdrawn', `Successfully withdrew ${formatEther(stake)} MNT! You are no longer an active arbitrator.`);
+      notifySuccess('Stake Withdrawn', `Successfully withdrew ${formatEther(stake)} ETH! You are no longer an active arbitrator.`);
       await loadArbitrationData();
     } catch (error: any) {
       console.error("Error unstaking arbitrator:", error);
@@ -3646,7 +3646,7 @@ export default function App({ thirdwebClient }: AppProps) {
                   </div>
 
                   <div className="form-group">
-                    <label className="form-label">💰 Amount (MNT)</label>
+                    <label className="form-label">💰 Amount (ETH)</label>
                     <input
                       type="number"
                       className="form-input"
@@ -3695,7 +3695,7 @@ export default function App({ thirdwebClient }: AppProps) {
                             fontWeight: 600
                           }}>
                             <span style={{ color: '#1e293b' }}>Total Payment:</span>
-                            <span style={{ color: '#1e293b' }}>{royaltyBreakdown.totalAmount} MNT</span>
+                            <span style={{ color: '#1e293b' }}>{royaltyBreakdown.totalAmount} ETH</span>
                           </div>
 
                           {/* Platform Fee */}
@@ -3707,7 +3707,7 @@ export default function App({ thirdwebClient }: AppProps) {
                             borderRadius: '4px'
                           }}>
                             <span style={{ color: '#1e293b' }}>🏛️ Platform Fee (2.5%):</span>
-                            <span style={{ color: '#1e293b' }}>{royaltyBreakdown.platformFee.toFixed(6)} MNT</span>
+                            <span style={{ color: '#1e293b' }}>{royaltyBreakdown.platformFee.toFixed(6)} ETH</span>
                           </div>
 
                           {/* Remaining After Fee */}
@@ -3723,7 +3723,7 @@ export default function App({ thirdwebClient }: AppProps) {
                             marginBottom: '0.25rem'
                           }}>
                             <span style={{ color: '#1e293b' }}>💰 Available for Distribution:</span>
-                            <span style={{ color: '#1e293b' }}>{royaltyBreakdown.remainingAfterFee.toFixed(6)} MNT</span>
+                            <span style={{ color: '#1e293b' }}>{royaltyBreakdown.remainingAfterFee.toFixed(6)} ETH</span>
                           </div>
 
                           {/* License Royalties */}
@@ -3756,7 +3756,7 @@ export default function App({ thirdwebClient }: AppProps) {
                                     </span>
                                   </span>
                                   <span style={{ fontWeight: 500, color: '#1e293b' }}>
-                                    {lr.amount.toFixed(6)} MNT
+                                    {lr.amount.toFixed(6)} ETH
                                   </span>
                                 </div>
                               ))}
@@ -3775,7 +3775,7 @@ export default function App({ thirdwebClient }: AppProps) {
                             borderTop: '2px solid rgba(0,0,0,0.1)'
                           }}>
                             <span style={{ color: '#1e293b' }}>👤 IP Owner Share:</span>
-                            <span style={{ color: '#1e293b' }}>{royaltyBreakdown.ipOwnerShare.toFixed(6)} MNT</span>
+                            <span style={{ color: '#1e293b' }}>{royaltyBreakdown.ipOwnerShare.toFixed(6)} ETH</span>
                           </div>
 
                           {/* Summary */}
@@ -3872,7 +3872,7 @@ export default function App({ thirdwebClient }: AppProps) {
                               ? '#155724'
                               : '#0c5460'
                           }}>
-                            {formatEther(accumulatedRoyalties.get(claimTokenId) || 0n)} MNT
+                            {formatEther(accumulatedRoyalties.get(claimTokenId) || 0n)} ETH
                           </span>
                         </div>
 
@@ -3978,7 +3978,7 @@ export default function App({ thirdwebClient }: AppProps) {
                             }}>
                               <strong>ℹ️ Your Arbitrator Status:</strong>
                               <div style={{ marginTop: '0.5rem' }}>
-                                <div>💰 Stake: {formatEther(userStake)} MNT</div>
+                                <div>💰 Stake: {formatEther(userStake)} ETH</div>
                                 <div>⚖️ Active Disputes: {userActiveDisputes}</div>
                                 <div>✅ Status: Active</div>
                                 {userActiveDisputes > 0 && (
@@ -3994,7 +3994,7 @@ export default function App({ thirdwebClient }: AppProps) {
                             onClick={unstakeArbitrator}
                             disabled={loading || !account?.address || userActiveDisputes > 0}
                           >
-                            {loading ? '⏳ Unstaking...' : `💸 Unstake (${formatEther(userStake)} MNT)`}
+                            {loading ? '⏳ Unstaking...' : `💸 Unstake (${formatEther(userStake)} ETH)`}
                           </button>
                         </>
                       );
@@ -4002,7 +4002,7 @@ export default function App({ thirdwebClient }: AppProps) {
                       return (
                         <>
                           <div className="form-group">
-                            <label className="form-label">💰 Minimum Stake (MNT)</label>
+                            <label className="form-label">💰 Minimum Stake (ETH)</label>
                             <input
                               type="number"
                               className="form-input"
@@ -4211,7 +4211,7 @@ export default function App({ thirdwebClient }: AppProps) {
                                   {(arb.activeDisputes || 0) >= 5 && ' ⚠️ (High Workload)'}
                                   {(arb.activeDisputes || 0) >= 3 && (arb.activeDisputes || 0) < 5 && ' ⚡ (Moderate)'}
                                 </div>
-                                <div>💰 Stake: {formatEther(arb.stake)} MNT</div>
+                                <div>💰 Stake: {formatEther(arb.stake)} ETH</div>
                               </div>
                             </div>
                           );
@@ -4541,7 +4541,7 @@ export default function App({ thirdwebClient }: AppProps) {
                             </div>
                             <div className="card-field">
                               <span className="card-field-label">Stake</span>
-                              <span className="card-field-value">💰 {formatEther(arb.stake)} MNT</span>
+                              <span className="card-field-value">💰 {formatEther(arb.stake)} ETH</span>
                             </div>
                             <div className="card-field">
                               <span className="card-field-label">Reputation</span>
@@ -4674,7 +4674,7 @@ export default function App({ thirdwebClient }: AppProps) {
                         maxWidth: '100%',
                         display: 'inline-block'
                       }}>
-                        💰 {parseFloat(formatEther(asset.totalRevenue)).toFixed(6)} MNT
+                        💰 {parseFloat(formatEther(asset.totalRevenue)).toFixed(6)} ETH
                       </span>
                     </div>
 

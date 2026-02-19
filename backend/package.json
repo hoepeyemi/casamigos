@@ -23,6 +23,7 @@
     "build": "tsc --project src/tsconfig.json",
     "test:yakoa": "ts-node src/scripts/test-yakoa.ts",
     "test:yakoa:unique": "ts-node src/yakoa/test-unique.ts",
-    "yakoa:register": "ts-node src/yakoa/index.ts"
-  }
+"yakoa:register": "ts-node src/yakoa/index.ts",
+  "check:infringements": "ts-node src/scripts/check-all-infringements.ts"
+}
 }

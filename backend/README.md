@@ -32,12 +32,18 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
     "ipHash": "ipfs://Qm...",
     "metadata": "{\"name\":\"IP Asset Name\",\"description\":\"...\",...}",
     "isEncrypted": false,
-    "searContractAddress": "0xF28C97F2168Cd26483Bb6230f25dDD5066C68655",
+    "searContractAddress": "0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3",
     "skipContractCall": false
   }
   ```
 - **Response**: Returns transaction hash, IP asset ID, block number, and explorer URL
 - **Note**: Supports legacy `modredIpContractAddress` parameter for backward compatibility
+
+### Infringement (Yakoa)
+- **GET** `/api/infringement/status/:contractAddress/:tokenId` – infringement status for one IP asset (same as frontend).
+- **GET** `/api/infringement/status-all?contractAddress=0x...` – infringement status for **all IP assets** of the contract. Contract is optional if `MODRED_IP_CONTRACT_ADDRESS` is set in backend `.env` or `app/src/deployed_addresses.json` exists.
+
+**Script:** From the backend directory, run `npm run check:infringements` to check all IP assets and print results to the console. Requires `YAKOA_API_KEY`, `YAKOA_SUBDOMAIN`, and `YAKOA_NETWORK` in backend `.env`.
 
 ### License Minting
 - **POST** `/api/license/mint`
@@ -49,7 +55,7 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
     "duration": 86400,
     "commercialUse": true,
     "terms": "{\"transferable\":true,\"commercialAttribution\":true,...}",
-    "searContractAddress": "0xF28C97F2168Cd26483Bb6230f25dDD5066C68655"
+    "searContractAddress": "0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3"
   }
   ```
 - **Validation**: Automatically checks if a license already exists for the IP asset
@@ -119,8 +125,8 @@ The backend includes advanced automatic retry logic for blockchain transactions:
 - Searches recent blocks to recover transaction hash
 - Returns success response if transaction was submitted
 
-### HTTP 410 Errors (Mantle RPC Limitation)
-- Mantle RPC doesn't support `blockTag: 'pending'` for `eth_getTransactionCount`
+### HTTP 410 Errors (RPC Limitation)
+- Some RPC endpoints don't support `blockTag: 'pending'` for `eth_getTransactionCount`
 - Detects HTTP 410 errors related to pending blockTag
 - Uses longer retry delays (2s, 4s, 6s) for RPC errors
 - Automatically retries up to 3 times
@@ -137,8 +143,8 @@ The backend includes advanced automatic retry logic for blockchain transactions:
 - ✅ Added license validation (one license per IP)
 - ✅ Improved nonce handling - removed explicit nonce setting, let viem handle automatically
 - ✅ Enhanced error messages and user feedback
-- ✅ Updated contract address (0xF28C97F2168Cd26483Bb6230f25dDD5066C68655)
-- ✅ HTTP 410 error detection and handling for Mantle RPC `pending` blockTag limitation
+- ✅ Updated contract address (0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3)
+- ✅ HTTP 410 error detection and handling for RPC `pending` blockTag limitation
 - ✅ "Already known" transaction error detection and recovery
 - ✅ Transaction hash recovery from recent blocks (searches last 20 blocks)
 - ✅ Success response even when transaction hash can't be retrieved

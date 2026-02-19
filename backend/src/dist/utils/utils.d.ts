@@ -40,6 +40,6 @@ export interface LicensingConfig {
 }
 export declare const defaultLicensingConfig: LicensingConfig;
 export declare function convertRoyaltyPercentToTokens(royaltyPercent: number): number;
-export declare function getMantleExplorerUrl(txHash: string): string;
-export declare function getMantleAddressExplorerUrl(address: string): string;
+export declare function getBaseSepoliaExplorerUrl(txHash: string): string;
+export declare function getBaseSepoliaAddressExplorerUrl(address: string): string;
 //# sourceMappingURL=utils.d.ts.map

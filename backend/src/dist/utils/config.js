@@ -8,36 +8,36 @@ const viem_1 = require("viem");
 const accounts_1 = require("viem/accounts");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
-// Mantle Sepolia testnet configuration
-const mantleTestnet = {
-    id: 5003,
-    name: 'Mantle Sepolia Testnet',
+// Base Sepolia configuration
+const baseSepolia = {
+    id: 84532,
+    name: 'Base Sepolia',
     nativeCurrency: {
-        name: 'MNT',
-        symbol: 'MNT',
+        name: 'ETH',
+        symbol: 'ETH',
         decimals: 18,
     },
     rpcUrls: {
         default: {
-            http: ['https://mantle-sepolia.drpc.org'],
+            http: ['https://sepolia.base.org'],
         },
         public: {
-            http: ['https://mantle-sepolia.drpc.org'],
+            http: ['https://sepolia.base.org'],
         },
     },
     blockExplorers: {
         default: {
-            name: 'Mantle Testnet Explorer',
-            url: 'https://explorer.testnet.mantle.xyz',
+            name: 'Basescan',
+            url: 'https://sepolia.basescan.org',
         },
     },
 };
 // Network configuration
 const networkConfig = {
-    rpcProviderUrl: 'https://mantle-sepolia.drpc.org',
-    blockExplorer: 'https://explorer.testnet.mantle.xyz',
-    chain: mantleTestnet,
-    nativeTokenAddress: '0x0000000000000000000000000000000000000000', // Native MNT token
+    rpcProviderUrl: 'https://sepolia.base.org',
+    blockExplorer: 'https://sepolia.basescan.org',
+    chain: baseSepolia,
+    nativeTokenAddress: '0x0000000000000000000000000000000000000000', // Native ETH
 };
 // Helper functions
 const validateEnvironmentVars = () => {

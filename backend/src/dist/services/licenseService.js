@@ -15,13 +15,13 @@ const mintLicense = async (licenseRequest) => {
                 message: 'License minting failed: IP already has a license'
             };
         }
-        const { txHash, blockNumber, explorerUrl } = await (0, storyService_1.mintLicenseOnMantle)(licenseRequest.tokenId, licenseRequest.royaltyPercentage, licenseRequest.duration, licenseRequest.commercialUse, licenseRequest.terms, licenseRequest.searContractAddress);
+        const { txHash, blockNumber, explorerUrl } = await (0, storyService_1.mintLicenseOnBaseSepolia)(licenseRequest.tokenId, licenseRequest.royaltyPercentage, licenseRequest.duration, licenseRequest.commercialUse, licenseRequest.terms, licenseRequest.searContractAddress);
         const result = {
             success: true,
             txHash,
             blockNumber,
             explorerUrl,
-            message: 'License minted successfully on Mantle'
+            message: 'License minted successfully on Base Sepolia'
         };
         // Convert any BigInt values to strings for JSON serialization
         return (0, bigIntSerializer_1.convertBigIntsToStrings)(result);
@@ -31,7 +31,7 @@ const mintLicense = async (licenseRequest) => {
         return {
             success: false,
             error: error instanceof Error ? error.message : 'Unknown error occurred',
-            message: 'Failed to mint license on Mantle'
+            message: 'Failed to mint license on Base Sepolia'
         };
     }
 };

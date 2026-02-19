@@ -79,3 +79,7 @@ To test **raiseDispute**, **assignArbitrators**, **submitArbitrationDecision**, 
 - Add separate small scripts (e.g. `run-dispute.ts`) that use multiple keys and call the dispute/arbitration functions in sequence.
 
 The current `run-all.ts` skips the dispute step and logs a note if you want to add it.
+
+## Infringement check (all IP assets)
+
+At the end of each run, the script invokes the backend infringement check for **all IP assets** (same flow as the frontend: read token IDs from the contract, then call Yakoa for each). Ensure **backend/.env** has `YAKOA_API_KEY`, `YAKOA_SUBDOMAIN`, and `YAKOA_NETWORK`. To skip, set `RUN_INFRINGEMENT_CHECK=false`. You can also run the check alone from the backend: `cd backend && npm run check:infringements`.

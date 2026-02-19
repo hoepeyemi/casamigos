@@ -10,37 +10,23 @@ const deployerPrivateKey = config_1.vars.get("DEPLOYER_PRIVATE_KEY");
 const config = {
     solidity: "0.8.24",
     networks: {
-        mantleMainnet: {
-            url: "https://rpc.mantle.xyz",
-            accounts: [deployerPrivateKey],
-            timeout: 120000, // 120 seconds
-        },
-        mantleTestnet: {
-            url: "https://mantle-sepolia.drpc.org",
+        baseSepolia: {
+            url: "https://sepolia.base.org",
             accounts: [deployerPrivateKey],
             timeout: 120000, // 120 seconds
         },
     },
     etherscan: {
         apiKey: {
-            mantleMainnet: "YOU_CAN_COPY_ME",
-            mantleTestnet: "YOU_CAN_COPY_ME",
+            baseSepolia: "YOU_CAN_COPY_ME",
         },
         customChains: [
             {
-                network: "mantleMainnet",
-                chainId: 5000,
+                network: "baseSepolia",
+                chainId: 84532,
                 urls: {
-                    apiURL: "https://explorer.mantle.xyz/api",
-                    browserURL: "https://explorer.mantle.xyz",
-                },
-            },
-            {
-                network: "mantleTestnet",
-                chainId: 5003,
-                urls: {
-                    apiURL: "https://explorer.testnet.mantle.xyz/api",
-                    browserURL: "https://explorer.testnet.mantle.xyz",
+                    apiURL: "https://api-sepolia.basescan.org/api",
+                    browserURL: "https://sepolia.basescan.org",
                 },
             },
         ],

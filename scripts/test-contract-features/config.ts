@@ -72,6 +72,8 @@ export function getConfig() {
   };
 }
 
+const IPFS_GATEWAY = "https://gateway.pinata.cloud/ipfs";
+
 /** Inputs for IP asset, license, and payRevenue (from env or defaults). See .env.example and TESTING.md. */
 export function getTestInputs() {
   const ipHashRaw = process.env.TEST_IP_HASH?.trim();
@@ -84,11 +86,33 @@ export function getTestInputs() {
           : `ipfs://${ipHashRaw}` // plain CID -> ipfs://CID like frontend
       : "ipfs://QmTestScriptHash" + Date.now();
 
-  const metadataRaw = process.env.TEST_IP_METADATA;
-  const metadata =
-    metadataRaw && metadataRaw.trim()
-      ? metadataRaw.trim()
-      : '{"name":"Test IP","description":"Created via contract test script"}';
+  // Extract CID for gateway URL (so tokenURI metadata has "image" for Basescan/explorers)
+  const cidForGateway = ipHashForContract.replace(/^ipfs:\/\//, "").split("/")[0];
+  const imageUrl = `${IPFS_GATEWAY}/${cidForGateway}`;
+
+  const metadataRaw = process.env.TEST_IP_METADATA?.trim();
+  let metadata: string;
+  if (metadataRaw && metadataRaw.length > 0) {
+    metadata = metadataRaw;
+    // If user metadata is JSON and has no "image", inject image so Basescan can show it
+    if (metadata.startsWith("{")) {
+      try {
+        const obj = JSON.parse(metadata) as Record<string, unknown>;
+        if (obj.image === undefined || obj.image === null) {
+          obj.image = imageUrl;
+          metadata = JSON.stringify(obj);
+        }
+      } catch {
+        // leave metadata as-is
+      }
+    }
+  } else {
+    metadata = JSON.stringify({
+      name: "Test IP",
+      description: "Created via contract test script",
+      image: imageUrl,
+    });
+  }
   const isEncrypted = process.env.TEST_IP_ENCRYPTED === "true" || process.env.TEST_IP_ENCRYPTED === "1";
 
   const royaltyBps = Math.min(10000, Math.max(0, parseInt(process.env.TEST_LICENSE_ROYALTY_BPS ?? "1000", 10) || 1000));

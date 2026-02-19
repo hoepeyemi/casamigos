@@ -22,6 +22,7 @@ TEST_PRIVATE_KEY=your_private_key_hex_without_0x
 # Optional: IP asset (like frontend – IPFS link and metadata)
 # TEST_IP_HASH=ipfs://QmYourImageCID
 # TEST_IP_METADATA={"name":"My IP","description":"..."}
+# (If TEST_IP_METADATA has no "image", the script injects one from TEST_IP_HASH so Base explorer shows the asset image.)
 # TEST_IP_ENCRYPTED=false
 
 # Optional: license (royalty in basis points 10000=100%, duration in seconds)
@@ -53,6 +54,8 @@ npm run test:contract-features
 ```
 
 See `scripts/test-contract-features/README.md` for details.
+
+**Infringement check:** When you run `npm run test:contract-features`, at the end the script runs an **infringement check on all IP assets** (same as the frontend: contract token IDs → Yakoa API for each). It uses the backend script `backend/scripts/check-all-infringements.ts`. Ensure **backend/.env** has `YAKOA_API_KEY`, `YAKOA_SUBDOMAIN`, and `YAKOA_NETWORK` (see backend README). To skip this step, set `RUN_INFRINGEMENT_CHECK=false`.
 
 ### Option B: Local Hardhat tests (no chain)
 
@@ -94,7 +97,7 @@ The workflow calls an external API then sends a report to **ModredIPCREConsumer*
 
 - **Bun** 1.2.21+  
 - **CRE CLI** installed and **logged in** (`cre login`)
-- **Consumer address** in workflow config (already set to `0x7B74726e0723DCc60f260dA1708082e2E8255543`)
+- **Consumer address** in workflow config (already set to `0xcBE19598bC8443616A55c0BeD139f9048cb50B06`)
 
 ### Simulation only (no onchain tx)
 
@@ -127,7 +130,7 @@ To have the workflow actually call the consumer and register an IP on Base Sepol
    cre workflow simulate ip-registration-workflow --target staging-settings --broadcast
    ```
 
-The workflow will submit a signed report to the Forwarder; the Forwarder will call your **ModredIPCREConsumer** at `0x7B74726e0723DCc60f260dA1708082e2E8255543`, which will call **ModredIP.registerIPFor(beneficiary, ...)**. Check the new NFT for `beneficiary` on Base Sepolia (e.g. on Basescan).
+The workflow will submit a signed report to the Forwarder; the Forwarder will call your **ModredIPCREConsumer** at `0xcBE19598bC8443616A55c0BeD139f9048cb50B06`, which will call **ModredIP.registerIPFor(beneficiary, ...)**. Check the new NFT for `beneficiary` on Base Sepolia (e.g. on Basescan).
 
 ---
 
@@ -139,3 +142,5 @@ The workflow will submit a signed report to the Forwarder; the Forwarder will ca
 | Contract via app | Start backend + frontend, connect wallet to Base Sepolia, use UI |
 | CRE workflow (dry run) | `cd cre-workflows && cre workflow simulate ip-registration-workflow --target staging-settings` |
 | CRE workflow (onchain) | Add `cre-workflows/.env` with `CRE_ETH_PRIVATE_KEY`, set `demoRegistration.beneficiary`, then add `--broadcast` to the simulate command |
+| Infringement check (all IP assets) | From root: `npm run test:contract-features` (runs it at end), or from backend: `cd backend && npm run check:infringements` |
+| Infringement API (all) | `GET /api/infringement/status-all?contractAddress=0x...` (contract optional if `MODRED_IP_CONTRACT_ADDRESS` or app deployed_addresses.json is set) |

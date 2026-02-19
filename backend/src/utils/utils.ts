@@ -4,14 +4,14 @@ import { networkInfo, NATIVE_TOKEN_ADDRESS } from './config'
 
 dotenv.config()
 
-// Use native MNT token as WIP_TOKEN_ADDRESS
+// Use native ETH as WIP_TOKEN_ADDRESS
 export const WIP_TOKEN_ADDRESS: Address = NATIVE_TOKEN_ADDRESS
 
 // Export contract addresses with appropriate defaults based on network
 export const NFTContractAddress: Address =
     (process.env.NFT_CONTRACT_ADDRESS as Address) || zeroAddress
 
-// License terms for Mantle IP management
+// License terms for Base Sepolia IP management
 export interface LicenseTerms {
     transferable: boolean
     royaltyPolicy: Address
@@ -54,11 +54,11 @@ export const NonCommercialSocialRemixingTerms: LicenseTerms = {
     uri: 'https://github.com/piplabs/pil-document/blob/998c13e6ee1d04eb817aefd1fe16dfe8be3cd7a2/off-chain-terms/NCSR.json',
 }
 
-// Royalty policy addresses for Mantle
+// Royalty policy addresses for Base Sepolia
 export const RoyaltyPolicyLAP: Address = '0xBe54FB168b3c982b7AaE60dB6CF75Bd8447b390E'
 export const RoyaltyPolicyLRP: Address = '0x9156e603C949481883B1d3355c6f1132D191fC41'
 
-// Commercial remix terms for Mantle
+// Commercial remix terms for Base Sepolia
 export function createCommercialRemixTerms(terms: { commercialRevShare: number; defaultMintingFee: number }): LicenseTerms {
     return {
         transferable: true,
@@ -81,7 +81,7 @@ export function createCommercialRemixTerms(terms: { commercialRevShare: number; 
     }
 }
 
-// Licensing configuration for Mantle
+// Licensing configuration for Base Sepolia
 export interface LicensingConfig {
     mintingFee: bigint
     isSet: boolean
@@ -109,11 +109,11 @@ export function convertRoyaltyPercentToTokens(royaltyPercent: number): number {
     return royaltyPercent * 1_000_000
 }
 
-// Mantle-specific utility functions
-export function getMantleExplorerUrl(txHash: string): string {
+// Base Sepolia explorer utility functions
+export function getBaseSepoliaExplorerUrl(txHash: string): string {
     return `${networkInfo.blockExplorer}/tx/${txHash}`
 }
 
-export function getMantleAddressExplorerUrl(address: string): string {
+export function getBaseSepoliaAddressExplorerUrl(address: string): string {
     return `${networkInfo.blockExplorer}/address/${address}`
 }

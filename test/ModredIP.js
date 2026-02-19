@@ -37,7 +37,7 @@ describe("ModredIP", function () {
         const modredIP = await hardhat_1.default.viem.deployContract("ModredIP", [
             registry.address,
             accountImplementation.address,
-            5003n, // Mantle Sepolia testnet chain ID
+            84532n, // Base Sepolia chain ID
             feeCollector.account.address
         ]);
         const publicClient = await hardhat_1.default.viem.getPublicClient();

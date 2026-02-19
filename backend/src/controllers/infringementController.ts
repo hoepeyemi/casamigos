@@ -1,5 +1,9 @@
 import { Request, Response } from 'express';
 import { getYakoaInfringementStatus } from '../services/yakoascanner';
+import {
+  getInfringementStatusForAllIpAssets,
+  getModredIPContractAddress,
+} from '../services/infringementAllService';
 import { convertBigIntsToStrings } from '../utils/bigIntSerializer';
 
 const handleInfringementStatus = async (req: Request, res: Response) => {
@@ -67,4 +71,19 @@ const handleInfringementStatusByContract = async (req: Request, res: Response) =
   }
 };
 
-export { handleInfringementStatus, handleInfringementStatusByContract }; 
+const handleInfringementStatusAll = async (req: Request, res: Response) => {
+  try {
+    const contractAddress =
+      (req.query.contractAddress as string)?.trim() || getModredIPContractAddress();
+    const result = await getInfringementStatusForAllIpAssets(contractAddress);
+    return res.status(200).json(convertBigIntsToStrings(result));
+  } catch (err) {
+    console.error('Infringement status all error:', err);
+    return res.status(500).json({
+      error: 'Failed to retrieve infringement status for all IP assets',
+      details: err instanceof Error ? err.message : err,
+    });
+  }
+};
+
+export { handleInfringementStatus, handleInfringementStatusByContract, handleInfringementStatusAll }; 

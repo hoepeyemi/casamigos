@@ -1,6 +1,6 @@
 # Casamigos Frontend
 
-A React-based frontend for the Casamigos intellectual property management system on Mantle.
+A React-based frontend for the Casamigos intellectual property management system on Base Sepolia.
 
 ## Features
 
@@ -51,7 +51,7 @@ A React-based frontend for the Casamigos intellectual property management system
 - **Instant Alerts**: Receive notifications when new infringements are detected
 
 ### 6. Arbitration System
-- **Register as Arbitrator**: Stake MNT to become an arbitrator
+- **Register as Arbitrator**: Stake ETH to become an arbitrator
 - **Unstake**: Withdraw stake when no active disputes assigned
 - **Submit Decisions**: Vote on disputes (uphold or reject)
 - **Auto-Resolution**: Disputes resolve automatically when majority is clear
@@ -102,7 +102,7 @@ A React-based frontend for the Casamigos intellectual property management system
 
 ### Paying Revenue
 1. Select the target IP Asset
-2. Enter the payment amount in MNT
+2. Enter the payment amount in ETH
 3. **View Royalty Breakdown**: The system automatically calculates and displays:
    - Platform fee (2.5%)
    - Each license holder's share based on their royalty percentage
@@ -117,7 +117,7 @@ A React-based frontend for the Casamigos intellectual property management system
 3. The system displays:
    - Your accumulated royalties (if any)
    - Your active licenses and their royalty rates
-   - Claimable amount in MNT
+   - Claimable amount in ETH
 4. Click "Claim Royalties" (enabled only if you have claimable royalties)
 5. Confirm the transaction to receive your accumulated royalties
 
@@ -149,10 +149,10 @@ A React-based frontend for the Casamigos intellectual property management system
 ## Contract Addresses
 
 Current deployed contract addresses are stored in `src/deployed_addresses.json`:
-- **ModredIP**: `0xF28C97F2168Cd26483Bb6230f25dDD5066C68655` (ModredIPModule#ModredIP)
-- **ERC6551Registry**: `0x0f7a9D776e6823d8aC0b82334Df461caBb878905`
-- **ERC6551Account**: `0xDcD569eF07d7b04039e1331D78f8dbC073303aeE`
-- **ModredIPCREConsumer**: `0x7B74726e0723DCc60f260dA1708082e2E8255543` (CRE)
+- **ModredIP**: `0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3` (ModredIPModule#ModredIP)
+- **ERC6551Registry**: `0x2DA4B52913A928263a405dE3b42a5768a4dCa3b0`
+- **ERC6551Account**: `0x7f51D3B234E4c20959A1f6e91D3B852EE16c65A6`
+- **ModredIPCREConsumer**: `0xcBE19598bC8443616A55c0BeD139f9048cb50B06` (CRE)
 
 **Note**: The contract key "ModredIPModule#ModredIP" is maintained for compatibility, but the application name is "Casamigos".
 
@@ -166,7 +166,7 @@ Current deployed contract addresses are stored in `src/deployed_addresses.json`:
 - License validation (one license per IP)
 - Nonce management with retry logic
 - Transaction error handling and recovery
-- HTTP 410 RPC error recovery (Mantle pending blockTag limitation)
+- HTTP 410 RPC error recovery (pending blockTag limitation)
 - "Already known" transaction error recovery
 - Transaction hash recovery from recent blocks
 

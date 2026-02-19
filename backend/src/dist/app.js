@@ -21,7 +21,7 @@ app.use('/api/yakoa', yakoaRoutes_1.default);
 app.use('/api/license', license_1.default);
 // Default route (optional)
 app.get('/', (_req, res) => {
-    res.send('✅ Yakoa + Mantle backend is running!');
+    res.send('✅ Yakoa + Base Sepolia backend is running!');
 });
 // Start the server
 app.listen(PORT, () => {

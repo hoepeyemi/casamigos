@@ -242,7 +242,7 @@ The founders experienced firsthand the challenges of IP management:
 - [x] User authentication and wallet integration
 - [x] Improved nonce handling with retry logic
 - [x] Enhanced error handling and user feedback
-- [x] HTTP 410 error handling for Mantle RPC pending blockTag limitation
+- [x] HTTP 410 error handling for RPC pending blockTag limitation
 - [x] "Already known" transaction error recovery
 - [x] Transaction hash recovery from recent blocks
 - [x] Homepage/landing page with wallet connection requirement
@@ -361,7 +361,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- **Mantle Team**: For blockchain infrastructure support
+- **Base / Ethereum**: For blockchain infrastructure support
 - **Yakoa Team**: For AI-powered infringement detection
 - **IPFS Team**: For decentralized storage solutions
 - **Open Source Community**: For invaluable contributions

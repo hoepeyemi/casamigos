@@ -277,6 +277,24 @@ async function main() {
 
   log("");
   log("========== Done. All frontend contract features exercised. ==========");
+
+  // --- Infringement check for all IP assets (backend Yakoa) ---
+  if (process.env.RUN_INFRINGEMENT_CHECK !== "false") {
+    log("");
+    log("========== Infringement check (all IP assets via backend) ==========");
+    const path = require("path");
+    const { execSync } = require("child_process");
+    const backendDir = path.join(__dirname, "..", "..", "backend");
+    try {
+      execSync("npx ts-node src/scripts/check-all-infringements.ts", {
+        cwd: backendDir,
+        stdio: "inherit",
+        env: { ...process.env, MODRED_IP_CONTRACT_ADDRESS: modredIPAddress },
+      });
+    } catch {
+      log("   (Skipped or failed: ensure backend/.env has YAKOA_API_KEY, YAKOA_SUBDOMAIN, YAKOA_NETWORK)");
+    }
+  }
 }
 
 main().catch((e) => {

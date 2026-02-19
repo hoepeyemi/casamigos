@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { registerIpWithMantle } from '../services/storyService';
+import { registerIpOnBaseSepolia } from '../services/storyService';
 import { registerToYakoa } from '../services/yakoascanner';
 import { Address } from 'viem';
 import { convertBigIntsToStrings } from '../utils/bigIntSerializer';
@@ -54,7 +54,7 @@ const handleRegistration = async (req: Request, res: Response) => {
     let explorerUrl: string | null = null;
 
     try {
-      const result = await registerIpWithMantle(ipHash, metadata, isEncrypted, contractAddress as Address);
+      const result = await registerIpOnBaseSepolia(ipHash, metadata, isEncrypted, contractAddress as Address);
       txHash = result.txHash;
       ipAssetId = result.ipAssetId;
       blockNumber = result.blockNumber;

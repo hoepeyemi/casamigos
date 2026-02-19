@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.mintLicenseOnMantle = exports.registerIpWithMantle = exports.checkExistingLicenses = void 0;
+exports.mintLicenseOnBaseSepolia = exports.registerIpOnBaseSepolia = exports.checkExistingLicenses = void 0;
 const config_1 = require("../utils/config");
 // ModredIP contract ABI (simplified for IP registration)
 const MODRED_IP_ABI = [
@@ -133,7 +133,7 @@ const checkExistingLicenses = async (tokenId, modredIpContractAddress) => {
     }
 };
 exports.checkExistingLicenses = checkExistingLicenses;
-const registerIpWithMantle = async (ipHash, metadata, isEncrypted, modredIpContractAddress) => {
+const registerIpOnBaseSepolia = async (ipHash, metadata, isEncrypted, modredIpContractAddress) => {
     const maxRetries = 3;
     let lastError = null;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -188,7 +188,7 @@ const registerIpWithMantle = async (ipHash, metadata, isEncrypted, modredIpContr
         }
         catch (error) {
             lastError = error;
-            console.error(`❌ Error registering IP with Mantle (attempt ${attempt + 1}/${maxRetries}):`, error?.message || error);
+            console.error(`❌ Error registering IP on Base Sepolia (attempt ${attempt + 1}/${maxRetries}):`, error?.message || error);
             // Check if it's a nonce-related error (check nested cause chain)
             const checkNonceError = (err, depth = 0) => {
                 if (!err || depth > 5)
@@ -219,8 +219,8 @@ const registerIpWithMantle = async (ipHash, metadata, isEncrypted, modredIpContr
     // If we exhausted all retries, throw the last error
     throw lastError;
 };
-exports.registerIpWithMantle = registerIpWithMantle;
-const mintLicenseOnMantle = async (tokenId, royaltyPercentage, duration, commercialUse, terms, modredIpContractAddress) => {
+exports.registerIpOnBaseSepolia = registerIpOnBaseSepolia;
+const mintLicenseOnBaseSepolia = async (tokenId, royaltyPercentage, duration, commercialUse, terms, modredIpContractAddress) => {
     const maxRetries = 3;
     let lastError = null;
     for (let attempt = 0; attempt < maxRetries; attempt++) {
@@ -258,7 +258,7 @@ const mintLicenseOnMantle = async (tokenId, royaltyPercentage, duration, commerc
         }
         catch (error) {
             lastError = error;
-            console.error(`❌ Error minting license on Mantle (attempt ${attempt + 1}/${maxRetries}):`, error?.message || error);
+            console.error(`❌ Error minting license on Base Sepolia (attempt ${attempt + 1}/${maxRetries}):`, error?.message || error);
             // Check if it's a nonce-related error (check nested cause chain)
             const checkNonceError = (err, depth = 0) => {
                 if (!err || depth > 5)
@@ -289,4 +289,4 @@ const mintLicenseOnMantle = async (tokenId, royaltyPercentage, duration, commerc
     // If we exhausted all retries, throw the last error
     throw lastError;
 };
-exports.mintLicenseOnMantle = mintLicenseOnMantle;
+exports.mintLicenseOnBaseSepolia = mintLicenseOnBaseSepolia;

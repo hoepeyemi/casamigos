@@ -3,7 +3,7 @@
 ## Current Contract Status
 
 The application is currently using the V2 contract:
-- **ModredIP**: `0xF28C97F2168Cd26483Bb6230f25dDD5066C68655`
+- **ModredIP**: `0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3`
 - **Contract Key**: `ModredIPModule#ModredIP` (maintained for compatibility)
 - **Status**: ✅ Active and verified to have `registerIP` function
 
@@ -131,7 +131,7 @@ The backend includes advanced transaction reliability features:
 ### Error Recovery
 - **"Already Known" Detection**: Detects when transactions were submitted but errors occurred
 - **Transaction Hash Recovery**: Searches last 20 blocks to find transaction hash
-- **HTTP 410 Handling**: Handles Mantle RPC limitation with `pending` blockTag
+- **HTTP 410 Handling**: Handles RPC limitation with `pending` blockTag
 - **Success Guarantee**: Returns success even when transaction hash can't be retrieved
 
 ### RPC Notes

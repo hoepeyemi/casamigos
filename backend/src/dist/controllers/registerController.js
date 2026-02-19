@@ -21,7 +21,7 @@ const handleRegistration = async (req, res) => {
             console.log("⚠️ Skipping contract call (testing mode)");
             const responseData = {
                 message: 'IP Asset metadata prepared successfully (contract call skipped - testing mode)',
-                mantle: {
+                base: {
                     txHash: null,
                     ipAssetId: null,
                     explorerUrl: null,
@@ -42,18 +42,18 @@ const handleRegistration = async (req, res) => {
                 error: 'Missing required parameter: searContractAddress (or modredIpContractAddress). Set skipContractCall=true to test without contract.'
             });
         }
-        // 1. Register on Mantle using Sear contract
+        // 1. Register on Base Sepolia using contract
         let txHash = null;
         let ipAssetId = undefined;
         let blockNumber = null;
         let explorerUrl = null;
         try {
-            const result = await (0, storyService_1.registerIpWithMantle)(ipHash, metadata, isEncrypted, contractAddress);
+            const result = await (0, storyService_1.registerIpOnBaseSepolia)(ipHash, metadata, isEncrypted, contractAddress);
             txHash = result.txHash;
             ipAssetId = result.ipAssetId;
             blockNumber = result.blockNumber;
             explorerUrl = result.explorerUrl;
-            console.log("✅ Mantle registration successful:", {
+            console.log("✅ Base Sepolia registration successful:", {
                 txHash,
                 ipAssetId,
                 blockNumber,
@@ -175,11 +175,11 @@ const handleRegistration = async (req, res) => {
             });
             // Determine success message based on Yakoa response
             const successMessage = yakoaResponse.alreadyRegistered
-                ? 'IP Asset registered on Mantle, already exists in Yakoa'
-                : 'IP Asset successfully registered on Mantle and Yakoa';
+                ? 'IP Asset registered on Base Sepolia, already exists in Yakoa'
+                : 'IP Asset successfully registered on Base Sepolia and Yakoa';
             const responseData = {
                 message: successMessage,
-                mantle: {
+                base: {
                     txHash,
                     ipAssetId,
                     explorerUrl,
@@ -193,7 +193,7 @@ const handleRegistration = async (req, res) => {
         else {
             const responseData = {
                 message: 'Registration successful (IP Asset ID not extracted)',
-                mantle: {
+                base: {
                     txHash,
                     ipAssetId: null,
                     explorerUrl,

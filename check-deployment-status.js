@@ -12,20 +12,20 @@ const account = privateKeyToAccount(`0x${deployerPrivateKey.replace(/^0x/, '')}`
 
 const publicClient = createPublicClient({
   chain: {
-    id: 5003,
-    name: 'Mantle Sepolia Testnet',
-    nativeCurrency: { name: 'MNT', symbol: 'MNT', decimals: 18 },
+    id: 84532,
+    name: 'Base Sepolia',
+    nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
     rpcUrls: {
-      default: { http: ['https://mantle-sepolia.drpc.org'] },
+      default: { http: ['https://sepolia.base.org'] },
     },
   },
-  transport: http('https://mantle-sepolia.drpc.org'),
+  transport: http('https://sepolia.base.org'),
 });
 
 async function checkDeploymentStatus() {
   try {
     console.log('🔍 Checking deployment status for:', account.address);
-    console.log('💡 Explorer: https://explorer.testnet.mantle.xyz/address/' + account.address);
+    console.log('💡 Explorer: https://sepolia.basescan.org/address/' + account.address);
     console.log('');
     
     // Check nonce status
@@ -59,7 +59,7 @@ async function checkDeploymentStatus() {
       console.log('');
       console.log('💡 Solutions:');
       console.log('   1. Wait 2-5 minutes for transactions to confirm');
-      console.log('   2. Check explorer: https://explorer.testnet.mantle.xyz/address/' + account.address);
+      console.log('   2. Check explorer: https://sepolia.basescan.org/address/' + account.address);
       console.log('   3. If transactions are confirmed, you can clear the journal and continue');
       console.log('   4. If transactions are stuck, you may need to wait longer');
     } else {
