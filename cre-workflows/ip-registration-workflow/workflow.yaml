@@ -1,18 +1,19 @@
 # Workflow artifact paths for CRE CLI (--target selects section)
-# Run: cre workflow simulate ip-registration-workflow --target staging-settings
+# Run from cre-workflows/: cre workflow simulate ip-registration-workflow --target staging-settings
+# workflow-artifacts must be a sibling of user-workflow (not nested) for the CLI to find WorkflowPath.
 
 staging-settings:
   user-workflow:
     workflow-name: "ip-registration-workflow-staging"
-    workflow-artifacts:
-      workflow-path: "./main.ts"
-      config-path: "./config.staging.json"
-      secrets-path: ""
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.staging.json"
+    secrets-path: ""
 
 production-settings:
   user-workflow:
     workflow-name: "ip-registration-workflow-production"
-    workflow-artifacts:
-      workflow-path: "./main.ts"
-      config-path: "./config.production.json"
-      secrets-path: ""
+  workflow-artifacts:
+    workflow-path: "./main.ts"
+    config-path: "./config.production.json"
+    secrets-path: ""

@@ -5,11 +5,13 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "test:contract-features": "ts-node scripts/test-contract-features/run-all.ts"
+    "test:contract-features": "ts-node scripts/test-contract-features/run-all.ts",
+    "clean-install": "yarn cache clean && yarn install"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@types/node": ">=18.0.0",
     "@nomicfoundation/hardhat-toolbox-viem": "^3.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.12",
     "hardhat": "^2.22.16",

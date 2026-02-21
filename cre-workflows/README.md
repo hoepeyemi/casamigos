@@ -55,8 +55,25 @@ cre workflow simulate ip-registration-workflow --target staging-settings --broad
 
 This demonstrates:
 
-- **External API**: workflow calls `apiUrl` (e.g. GitHub API) via CRE HTTP capability.
-- **Blockchain**: workflow submits a signed report to **ModredIPCREConsumer** on Base Sepolia (register IP for `demoRegistration.beneficiary`).
+- **External API**: workflow calls `apiUrl` (Yakoa backend: `http://localhost:5000/api/yakoa` when backend is running locally; use your deployed backend URL for production).
+- **Blockchain**: workflow reads `nextTokenId` from ModredIP, then submits two signed reports to **ModredIPCREConsumer**: (1) register IP for `demoRegistration.beneficiary`, (2) mint license for that token (using `demoLicense` in config).
+- **Yakoa**: after the register IP tx, the workflow POSTs to the backend **POST /api/yakoa/register** so the new IP asset is registered with Yakoa for infringement monitoring (backend must be running and reachable at `apiUrl`).
+
+### CRE workflow vs `yarn test:contract-features`
+
+The CRE workflow mirrors the **onchain parts** that the consumer supports:
+
+| Step | CRE workflow | yarn test:contract-features |
+|------|---------------------------|-----------------------------|
+| Register IP | ✅ Report 1 → `registerIPFor` | ✅ `registerIP` |
+| Mint license | ✅ Report 2 → `mintLicenseByProxy` | ✅ `mintLicense` |
+| Pay revenue | ❌ (no proxy) | ✅ `payRevenue` |
+| Claim royalties | ❌ (no proxy) | ✅ `claimRoyalties` |
+| Register arbitrator | ❌ (no proxy) | ✅ `registerArbitrator` |
+| Disputes | ❌ (different signer) | ✅ optional |
+| Yakoa / infringement | ❌ (backend script) | ✅ at end |
+
+For **payRevenue**, **claimRoyalties**, **registerArbitrator**, **disputes**, and **Yakoa infringement**, run `yarn test:contract-features` from the repo root (or use the app/backend). The CRE workflow needs `evms[0].modredIPAddress` (for EVM read of `nextTokenId`) and `demoLicense` (royaltyBps, durationSec, commercialUse, terms) in config for the register + mint-license flow.
 
 ## How to test the CRE integration (step-by-step)
 
@@ -80,12 +97,13 @@ This demonstrates:
      - `CRE_ETH_PRIVATE_KEY=<hex_private_key>` for an account with Base Sepolia ETH (used when running with `--broadcast`).
 
 5. **Run a dry-run (no chain write)**
+   - For the workflow to reach the Yakoa backend API (`apiUrl`), start the backend first: `cd backend && npm start` (or set `apiUrl` in config to your deployed backend URL).
    - From repo root:
      ```bash
      cd cre-workflows
      cre workflow simulate ip-registration-workflow --target staging-settings
      ```
-   - You should see the workflow fetch the external API and build the report. It will **not** send a transaction unless you add `--broadcast`.
+   - You should see the workflow call the Yakoa backend and build the report. It will **not** send a transaction unless you add `--broadcast`.
 
 6. **Run with broadcast (real onchain registration)**
    - From `cre-workflows/`:
@@ -98,13 +116,13 @@ This demonstrates:
    - On [Basescan (Base Sepolia)](https://sepolia.basescan.org/), look up the ModredIP contract and confirm a new IP was registered (e.g. check `nextTokenId` or events).
    - Optionally call `ModredIP.getIPAsset(tokenId)` for the new token and confirm `beneficiary` is the owner.
 
-If simulation fails with "consumerAddress not configured", set `evms[0].consumerAddress` in `config.staging.json`. If broadcast fails, ensure `CRE_ETH_PRIVATE_KEY` is set and the account has Base Sepolia ETH.
+If simulation fails with "consumerAddress not configured", set `evms[0].consumerAddress` in `config.staging.json`. If broadcast fails, ensure `CRE_ETH_PRIVATE_KEY` is set and the account has Base Sepolia ETH. If you see **"invalid chain ID"** on WriteReport, use the official Base Sepolia RPC in `project.yaml` (`url: https://sepolia.base.org`) so the write capability sees chain ID 84532. **Note:** The log "Read nextTokenId: 9" means the *next* token to be created will be ID 9 (eight tokens already exist). No new token is created until the write succeeds; if WriteReport fails, nothing is minted. If you see **"nonce too low"** on the second WriteReport (mint license), run the workflow twice: first run creates the IP (register only); second run you can mint a license for that token (or run register + mint again; the delay between txs may resolve). The CRE runtime does not support `setTimeout`, so we cannot wait in-process between the two writes.
 
 ## Workflow behavior
 
 - **Trigger:** Cron (schedule in `config.staging.json` / `config.production.json`).
 - **Steps:**
-  1. HTTP GET to `config.apiUrl` (external API; consensus over DON).
+  1. HTTP GET to `config.apiUrl` (Yakoa backend; consensus over DON).
   2. Build report: `instructionType = 0` (register IP) with `demoRegistration` (beneficiary, ipHash, metadata, isEncrypted).
   3. `runtime.report()` → `evmClient.writeReport()` to `consumerAddress`.
 - **Result:** ModredIPCREConsumer receives the report and calls `ModredIP.registerIPFor(beneficiary, ipHash, metadata, isEncrypted)`.

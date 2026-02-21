@@ -22,7 +22,7 @@ import {
   encodeCallMsg,
   LAST_FINALIZED_BLOCK_NUMBER,
   type NodeRuntime,
-  type Runtime,
+  type Runtime, sendErrorResponse,
 } from "@chainlink/cre-sdk";
 import { encodeAbiParameters, parseAbiParameters, encodeFunctionData, decodeFunctionResult, parseAbi, type Address, zeroAddress } from "viem";
 
@@ -70,7 +70,7 @@ type WorkflowResult = {
   error?: string;
 };
 
-const onCronTrigger = (runtime: Runtime<Config>): WorkflowResult => {
+const onCronTrigger = async (runtime: Runtime<Config>): Promise<WorkflowResult> => {
   const evmConfig = runtime.config.evms[0];
   if (!evmConfig?.consumerAddress || evmConfig.consumerAddress.startsWith("REPLACE_")) {
     runtime.log("Skipping onchain write: set consumerAddress in config.staging.json");
@@ -181,38 +181,11 @@ const onCronTrigger = (runtime: Runtime<Config>): WorkflowResult => {
   };
   if (registerTxHash != null) result.registerTxHash = registerTxHash;
 
-  // 3b) Register the new IP asset with Yakoa (backend POST /api/yakoa/register) for infringement monitoring
-  const newTokenId = nextTokenIdBigInt != null ? Number(nextTokenIdBigInt) : null;
-  if (registerTxHash != null && newTokenId != null && modredIPAddress) {
-    const registerUrl = runtime.config.apiUrl.replace(/\/?$/, '') + '/register';
-    const yakoaRegisterBody = {
-      contractAddress: modredIPAddress.toLowerCase(),
-      tokenId: newTokenId,
-      txHash: registerTxHash,
-      creatorId: demo.beneficiary,
-      ipHash: demo.ipHash,
-      metadata: demo.metadata,
-      isEncrypted: demo.isEncrypted,
-    };
-    try {
-      const bodyBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(yakoaRegisterBody))));
-      const yakoaStatus = runtime.runInNodeMode(
-        (nodeRuntime: NodeRuntime<Config>) => {
-          const http = new HTTPClient();
-          const resp = http.sendRequest(nodeRuntime, {
-            url: registerUrl,
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: bodyBase64,
-          }).result();
-          return resp.statusCode;
-        },
-        consensusMedianAggregation<number>()
-      )().result();
-      runtime.log(`Yakoa register response: ${yakoaStatus}`);
-    } catch (e) {
-      runtime.log(`Yakoa register skipped or failed: ${e instanceof Error ? e.message : String(e)}`);
-    }
+  // Wait for first tx to be mined so second WriteReport uses correct nonce (avoid "nonce too low")
+  if (registerTxHash != null) {
+    const delayMs = 15_000;
+    runtime.log(`Waiting ${delayMs / 1000}s for first tx to be mined before mint license...`);
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
   }
 
   // 4) Report 2: Mint license for the new token (tokenId = nextTokenId we read)
@@ -267,3 +240,5 @@ export async function main() {
   const runner = await Runner.newRunner<Config>();
   await runner.run(initWorkflow);
 }
+
+main().catch(sendErrorResponse)

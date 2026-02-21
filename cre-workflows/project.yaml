@@ -1,12 +1,27 @@
 # CRE project: Casamigos IP tokenization workflows
 # See https://docs.chain.link/cre/reference/project-configuration-ts
+# RPCs must be under rpcs (array of chain-name + url) for the CLI to find them.
 
-targets:
-  staging-settings:
-    evm:
-      base-testnet-sepolia:
-        rpc-url: https://sepolia.base.org
-  production-settings:
-    evm:
-      base-testnet-sepolia:
-        rpc-url: https://sepolia.base.org
+staging-settings:
+  rpcs:
+    # Use official Base Sepolia RPC (chain ID 84532) so WriteReport sees correct chain
+    - chain-name: ethereum-testnet-sepolia-base-1
+      url: https://sepolia.base.org
+
+production-settings:
+  rpcs:
+    - chain-name: ethereum-testnet-sepolia-base-1
+      url: https://sepolia.base.org
+
+
+
+# production-settings:
+#   rpcs:
+#     - chain-name: ethereum-testnet-sepolia
+#       url: https://ethereum-sepolia-rpc.publicnode.com
+#     - chain-name: ethereum-mainnet
+#       url: https://ethereum-rpc.publicnode.com
+#     - chain-name: ethereum-testnet-sepolia-base-1
+#       url: https://base-sepolia-rpc.publicnode.com
+#     - chain-name: ethereum-mainnet-base-1
+#       url: https://base-rpc.publicnode.com
