@@ -7,6 +7,8 @@ import registerRoutes from './routes/register';
 import yakoaRoutes from './routes/yakoaRoutes';
 import licenseRoutes from './routes/license';
 import infringementRoutes from './routes/infringement';
+import creEventsRoutes from './routes/creEvents';
+import registerIpYakoaRoutes from './routes/registerIpYakoa';
 
 // Load environment variables
 dotenv.config();
@@ -23,6 +25,8 @@ app.use('/api/register', registerRoutes);
 app.use('/api/yakoa', yakoaRoutes);
 app.use('/api/license', licenseRoutes);
 app.use('/api/infringement', infringementRoutes);
+app.use('/api/cre-events', creEventsRoutes);
+app.use('/api/register-ip-yakoa', registerIpYakoaRoutes);
 
 // Default route (optional)
 app.get('/', (_req, res) => {

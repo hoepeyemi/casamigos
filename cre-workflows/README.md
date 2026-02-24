@@ -57,7 +57,6 @@ This demonstrates:
 
 - **External API**: workflow calls `apiUrl` (Yakoa backend: `http://localhost:5000/api/yakoa` when backend is running locally; use your deployed backend URL for production).
 - **Blockchain**: workflow reads `nextTokenId` from ModredIP, then submits two signed reports to **ModredIPCREConsumer**: (1) register IP for `demoRegistration.beneficiary`, (2) mint license for that token (using `demoLicense` in config).
-- **Yakoa**: after the register IP tx, the workflow POSTs to the backend **POST /api/yakoa/register** so the new IP asset is registered with Yakoa for infringement monitoring (backend must be running and reachable at `apiUrl`).
 
 ### CRE workflow vs `yarn test:contract-features`
 

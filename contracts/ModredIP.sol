@@ -128,6 +128,9 @@ contract ModredIP is ERC721, Ownable, ReentrancyGuard {
     event ArbitratorsAssigned(uint256 indexed arbitrationId, uint256 indexed disputeId, address[] arbitrators);
     event ArbitrationVote(uint256 indexed arbitrationId, address indexed arbitrator, bool decision);
     event ArbitrationResolved(uint256 indexed arbitrationId, uint256 indexed disputeId, bool upheld);
+    event CREProxyUpdated(address indexed previousProxy, address indexed newProxy);
+    event PlatformFeeCollectorUpdated(address indexed previousCollector, address indexed newCollector);
+    event PlatformFeePercentageUpdated(uint256 previousBps, uint256 newBps);
     
     modifier onlyCREProxy() {
         require(creProxy != address(0) && msg.sender == creProxy, "Only CRE proxy");
@@ -248,7 +251,9 @@ contract ModredIP is ERC721, Ownable, ReentrancyGuard {
      * @dev Set the CRE proxy address (only owner). Get Forwarder addresses from Chainlink CRE Forwarder Directory.
      */
     function setCREProxy(address _creProxy) public onlyOwner {
+        address previousProxy = creProxy;
         creProxy = _creProxy;
+        emit CREProxyUpdated(previousProxy, _creProxy);
     }
     
     /**
@@ -959,7 +964,9 @@ contract ModredIP is ERC721, Ownable, ReentrancyGuard {
      * @dev Set platform fee collector (only owner)
      */
     function setPlatformFeeCollector(address _platformFeeCollector) public onlyOwner {
+        address previousCollector = platformFeeCollector;
         platformFeeCollector = _platformFeeCollector;
+        emit PlatformFeeCollectorUpdated(previousCollector, _platformFeeCollector);
     }
     
     /**
@@ -967,7 +974,9 @@ contract ModredIP is ERC721, Ownable, ReentrancyGuard {
      */
     function setPlatformFeePercentage(uint256 _platformFeePercentage) public onlyOwner {
         require(_platformFeePercentage <= ROYALTY_DECIMALS, "Fee too high");
+        uint256 previousBps = platformFeePercentage;
         platformFeePercentage = _platformFeePercentage;
+        emit PlatformFeePercentageUpdated(previousBps, _platformFeePercentage);
     }
     
     /**

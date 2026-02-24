@@ -961,9 +961,13 @@ var AbiDecodingZeroDataError;
 var AbiEncodingArrayLengthMismatchError;
 var AbiEncodingBytesSizeMismatchError;
 var AbiEncodingLengthMismatchError;
+var AbiEventSignatureEmptyTopicsError;
+var AbiEventSignatureNotFoundError;
 var AbiFunctionNotFoundError;
 var AbiFunctionOutputsNotFoundError;
 var AbiItemAmbiguityError;
+var DecodeLogDataMismatch;
+var DecodeLogTopicsMismatch;
 var InvalidAbiEncodingTypeError;
 var InvalidAbiDecodingTypeError;
 var InvalidArrayError;
@@ -1037,6 +1041,27 @@ var init_abi = __esm(() => {
 `), { name: "AbiEncodingLengthMismatchError" });
     }
   };
+  AbiEventSignatureEmptyTopicsError = class AbiEventSignatureEmptyTopicsError2 extends BaseError2 {
+    constructor({ docsPath }) {
+      super("Cannot extract event signature from empty topics.", {
+        docsPath,
+        name: "AbiEventSignatureEmptyTopicsError"
+      });
+    }
+  };
+  AbiEventSignatureNotFoundError = class AbiEventSignatureNotFoundError2 extends BaseError2 {
+    constructor(signature, { docsPath }) {
+      super([
+        `Encoded event signature "${signature}" not found on ABI.`,
+        "Make sure you are using the correct ABI and that the event exists on it.",
+        `You can look up the signature here: https://4byte.sourcify.dev/?q=${signature}.`
+      ].join(`
+`), {
+        docsPath,
+        name: "AbiEventSignatureNotFoundError"
+      });
+    }
+  };
   AbiFunctionNotFoundError = class AbiFunctionNotFoundError2 extends BaseError2 {
     constructor(functionName, { docsPath } = {}) {
       super([
@@ -1074,6 +1099,63 @@ var init_abi = __esm(() => {
         ],
         name: "AbiItemAmbiguityError"
       });
+    }
+  };
+  DecodeLogDataMismatch = class DecodeLogDataMismatch2 extends BaseError2 {
+    constructor({ abiItem, data, params, size: size2 }) {
+      super([
+        `Data size of ${size2} bytes is too small for non-indexed event parameters.`
+      ].join(`
+`), {
+        metaMessages: [
+          `Params: (${formatAbiParams(params, { includeName: true })})`,
+          `Data:   ${data} (${size2} bytes)`
+        ],
+        name: "DecodeLogDataMismatch"
+      });
+      Object.defineProperty(this, "abiItem", {
+        enumerable: true,
+        configurable: true,
+        writable: true,
+        value: undefined
+      });
+      Object.defineProperty(this, "data", {
+        enumerable: true,
+        configurable: true,
+        writable: true,
+        value: undefined
+      });
+      Object.defineProperty(this, "params", {
+        enumerable: true,
+        configurable: true,
+        writable: true,
+        value: undefined
+      });
+      Object.defineProperty(this, "size", {
+        enumerable: true,
+        configurable: true,
+        writable: true,
+        value: undefined
+      });
+      this.abiItem = abiItem;
+      this.data = data;
+      this.params = params;
+      this.size = size2;
+    }
+  };
+  DecodeLogTopicsMismatch = class DecodeLogTopicsMismatch2 extends BaseError2 {
+    constructor({ abiItem, param }) {
+      super([
+        `Expected a topic for indexed event parameter${param.name ? ` "${param.name}"` : ""} on event "${formatAbiItem2(abiItem, { includeName: true })}".`
+      ].join(`
+`), { name: "DecodeLogTopicsMismatch" });
+      Object.defineProperty(this, "abiItem", {
+        enumerable: true,
+        configurable: true,
+        writable: true,
+        value: undefined
+      });
+      this.abiItem = abiItem;
     }
   };
   InvalidAbiEncodingTypeError = class InvalidAbiEncodingTypeError2 extends BaseError2 {
@@ -2751,13 +2833,13 @@ function decodeFunctionResult(parameters) {
   if (functionName) {
     const item = getAbiItem({ abi, args, name: functionName });
     if (!item)
-      throw new AbiFunctionNotFoundError(functionName, { docsPath: docsPath2 });
+      throw new AbiFunctionNotFoundError(functionName, { docsPath: docsPath3 });
     abiItem = item;
   }
   if (abiItem.type !== "function")
-    throw new AbiFunctionNotFoundError(undefined, { docsPath: docsPath2 });
+    throw new AbiFunctionNotFoundError(undefined, { docsPath: docsPath3 });
   if (!abiItem.outputs)
-    throw new AbiFunctionOutputsNotFoundError(abiItem.name, { docsPath: docsPath2 });
+    throw new AbiFunctionOutputsNotFoundError(abiItem.name, { docsPath: docsPath3 });
   const values = decodeAbiParameters(abiItem.outputs, data);
   if (values && values.length > 1)
     return values;
@@ -2765,7 +2847,7 @@ function decodeFunctionResult(parameters) {
     return values[0];
   return;
 }
-var docsPath2 = "/docs/contract/decodeFunctionResult";
+var docsPath3 = "/docs/contract/decodeFunctionResult";
 var init_decodeFunctionResult = __esm(() => {
   init_abi();
   init_decodeAbiParameters();
@@ -16905,13 +16987,120 @@ var sendErrorResponse = (error) => {
   hostBindings.sendResponse(payload);
 };
 init_exports();
+init_abi();
+init_cursor();
+init_size();
+init_toEventSelector();
+init_decodeAbiParameters();
+init_formatAbiItem2();
+var docsPath2 = "/docs/contract/decodeEventLog";
+function decodeEventLog(parameters) {
+  const { abi, data, strict: strict_, topics } = parameters;
+  const strict = strict_ ?? true;
+  const [signature, ...argTopics] = topics;
+  if (!signature)
+    throw new AbiEventSignatureEmptyTopicsError({ docsPath: docsPath2 });
+  const abiItem = abi.find((x) => x.type === "event" && signature === toEventSelector(formatAbiItem2(x)));
+  if (!(abiItem && ("name" in abiItem)) || abiItem.type !== "event")
+    throw new AbiEventSignatureNotFoundError(signature, { docsPath: docsPath2 });
+  const { name, inputs } = abiItem;
+  const isUnnamed = inputs?.some((x) => !(("name" in x) && x.name));
+  const args = isUnnamed ? [] : {};
+  const indexedInputs = inputs.map((x, i2) => [x, i2]).filter(([x]) => ("indexed" in x) && x.indexed);
+  const missingIndexedInputs = [];
+  for (let i2 = 0;i2 < indexedInputs.length; i2++) {
+    const [param, argIndex] = indexedInputs[i2];
+    const topic = argTopics[i2];
+    if (!topic) {
+      if (strict)
+        throw new DecodeLogTopicsMismatch({
+          abiItem,
+          param
+        });
+      missingIndexedInputs.push([param, argIndex]);
+      continue;
+    }
+    args[isUnnamed ? argIndex : param.name || argIndex] = decodeTopic({
+      param,
+      value: topic
+    });
+  }
+  const nonIndexedInputs = inputs.filter((x) => !(("indexed" in x) && x.indexed));
+  const inputsToDecode = strict ? nonIndexedInputs : [...missingIndexedInputs.map(([param]) => param), ...nonIndexedInputs];
+  if (inputsToDecode.length > 0) {
+    if (data && data !== "0x") {
+      try {
+        const decodedData = decodeAbiParameters(inputsToDecode, data);
+        if (decodedData) {
+          let dataIndex = 0;
+          if (!strict) {
+            for (const [param, argIndex] of missingIndexedInputs) {
+              args[isUnnamed ? argIndex : param.name || argIndex] = decodedData[dataIndex++];
+            }
+          }
+          if (isUnnamed) {
+            for (let i2 = 0;i2 < inputs.length; i2++)
+              if (args[i2] === undefined && dataIndex < decodedData.length)
+                args[i2] = decodedData[dataIndex++];
+          } else
+            for (let i2 = 0;i2 < nonIndexedInputs.length; i2++)
+              args[nonIndexedInputs[i2].name] = decodedData[dataIndex++];
+        }
+      } catch (err) {
+        if (strict) {
+          if (err instanceof AbiDecodingDataSizeTooSmallError || err instanceof PositionOutOfBoundsError)
+            throw new DecodeLogDataMismatch({
+              abiItem,
+              data,
+              params: inputsToDecode,
+              size: size(data)
+            });
+          throw err;
+        }
+      }
+    } else if (strict) {
+      throw new DecodeLogDataMismatch({
+        abiItem,
+        data: "0x",
+        params: inputsToDecode,
+        size: 0
+      });
+    }
+  }
+  return {
+    eventName: name,
+    args: Object.values(args).length > 0 ? args : undefined
+  };
+}
+function decodeTopic({ param, value: value2 }) {
+  if (param.type === "string" || param.type === "bytes" || param.type === "tuple" || param.type.match(/^(.*)\[(\d+)?\]$/))
+    return value2;
+  const decodedArg = decodeAbiParameters([param], value2) || [];
+  return decodedArg[0];
+}
 var zeroAddress = "0x0000000000000000000000000000000000000000";
 init_decodeFunctionResult();
 init_encodeAbiParameters();
 init_encodeFunctionData();
+init_toBytes();
+init_keccak256();
 var INSTRUCTION_REGISTER_IP = 0;
 var INSTRUCTION_MINT_LICENSE = 1;
 var MODRED_IP_ABI = parseAbi(["function nextTokenId() view returns (uint256)"]);
+var MODRED_IP_EVENTS_ABI = parseAbi([
+  "event IPRegistered(uint256 indexed tokenId, address indexed owner, string ipHash)",
+  "event LicenseMinted(uint256 indexed licenseId, uint256 indexed tokenId, address indexed licensee)",
+  "event RevenuePaid(uint256 indexed tokenId, uint256 amount)",
+  "event RoyaltyClaimed(uint256 indexed tokenId, address indexed claimant, uint256 amount)",
+  "event DisputeRaised(uint256 indexed disputeId, uint256 indexed tokenId, address indexed disputer)",
+  "event DisputeResolved(uint256 indexed disputeId, uint256 indexed tokenId, bool resolved)",
+  "event IPTransferred(uint256 indexed tokenId, address indexed from, address indexed to)",
+  "event IPRegisteredViaCRE(address indexed beneficiary, uint256 tokenId, string ipHash)",
+  "event LicenseMintedViaCRE(uint256 indexed tokenId, address indexed licensee, uint256 licenseId)"
+]);
+function eventTopic0(signature) {
+  return keccak256(toBytes(signature));
+}
 var onCronTrigger = (runtime2) => {
   const evmConfig = runtime2.config.evms[0];
   if (!evmConfig?.consumerAddress || evmConfig.consumerAddress.startsWith("REPLACE_")) {
@@ -16991,42 +17180,13 @@ var onCronTrigger = (runtime2) => {
     gasConfig: { gasLimit: evmConfig.gasLimit }
   }).result();
   const registerTxHash = writeResult1.txHash ? bytesToHex(writeResult1.txHash) : null;
-  runtime2.log(`Register IP tx: ${registerTxHash ?? "(no tx in simulation)"}`);
+  runtime2.log(`Step 1 – Register IP tx: ${registerTxHash ?? "(no tx in simulation)"}`);
   const result = {
     externalApiFetched: true,
     beneficiary: demo.beneficiary
   };
   if (registerTxHash != null)
     result.registerTxHash = registerTxHash;
-  const newTokenId = nextTokenIdBigInt != null ? Number(nextTokenIdBigInt) : null;
-  if (registerTxHash != null && newTokenId != null && modredIPAddress) {
-    const registerUrl = runtime2.config.apiUrl.replace(/\/?$/, "") + "/register";
-    const yakoaRegisterBody = {
-      contractAddress: modredIPAddress.toLowerCase(),
-      tokenId: newTokenId,
-      txHash: registerTxHash,
-      creatorId: demo.beneficiary,
-      ipHash: demo.ipHash,
-      metadata: demo.metadata,
-      isEncrypted: demo.isEncrypted
-    };
-    try {
-      const bodyBase64 = btoa(unescape(encodeURIComponent(JSON.stringify(yakoaRegisterBody))));
-      const yakoaStatus = runtime2.runInNodeMode((nodeRuntime) => {
-        const http = new ClientCapability2;
-        const resp = http.sendRequest(nodeRuntime, {
-          url: registerUrl,
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: bodyBase64
-        }).result();
-        return resp.statusCode;
-      }, consensusMedianAggregation())().result();
-      runtime2.log(`Yakoa register response: ${yakoaStatus}`);
-    } catch (e) {
-      runtime2.log(`Yakoa register skipped or failed: ${e instanceof Error ? e.message : String(e)}`);
-    }
-  }
   const license = runtime2.config.demoLicense;
   const tokenIdForLicense = nextTokenIdBigInt != null ? Number(nextTokenIdBigInt) : null;
   if (license && tokenIdForLicense != null) {
@@ -17051,16 +17211,134 @@ var onCronTrigger = (runtime2) => {
       gasConfig: { gasLimit: evmConfig.gasLimit }
     }).result();
     const licenseTxHash = writeResult2.txHash ? bytesToHex(writeResult2.txHash) : null;
-    runtime2.log(`Mint license tx: ${licenseTxHash ?? "(no tx in simulation)"}`);
+    runtime2.log(`Step 2 – Mint license tx: ${licenseTxHash ?? "(no tx in simulation)"}`);
     result.tokenId = tokenIdForLicense;
     if (licenseTxHash != null)
       result.licenseTxHash = licenseTxHash;
   }
+  const apiUrl = runtime2.config.apiUrl?.replace(/\/$/, "") ?? "";
+  const tokenIdForYakoa = nextTokenIdBigInt != null ? Number(nextTokenIdBigInt) : null;
+  const contractForYakoa = modredIPAddress ?? evmConfig.consumerAddress;
+  if (apiUrl && registerTxHash && tokenIdForYakoa != null && contractForYakoa && !contractForYakoa.startsWith("REPLACE_")) {
+    const yakoaPayload = {
+      contractAddress: contractForYakoa.toLowerCase(),
+      tokenId: tokenIdForYakoa,
+      txHash: registerTxHash,
+      ipHash: demo.ipHash,
+      metadata: demo.metadata,
+      isEncrypted: demo.isEncrypted,
+      creatorId: demo.beneficiary
+    };
+    try {
+      const yakoaStatus = runtime2.runInNodeMode((nodeRuntime) => {
+        const http = new ClientCapability2;
+        const bodyBase64 = typeof Buffer !== "undefined" ? Buffer.from(JSON.stringify(yakoaPayload), "utf-8").toString("base64") : btoa(unescape(encodeURIComponent(JSON.stringify(yakoaPayload))));
+        const resp = http.sendRequest(nodeRuntime, {
+          url: `${nodeRuntime.config.apiUrl.replace(/\/$/, "")}/api/register-ip-yakoa`,
+          method: "POST",
+          body: bodyBase64,
+          headers: { "Content-Type": "application/json" }
+        }).result();
+        return resp.statusCode;
+      }, consensusMedianAggregation())().result();
+      if (yakoaStatus >= 200 && yakoaStatus < 300) {
+        runtime2.log(`Step 3 – IP registered for infringement (Yakoa): HTTP ${yakoaStatus}`);
+        result.yakoaRegistered = true;
+      } else {
+        runtime2.log(`Step 3 – Yakoa registration returned HTTP ${yakoaStatus}`);
+        result.yakoaError = `HTTP ${yakoaStatus}`;
+      }
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : String(e);
+      runtime2.log(`Step 3 – Yakoa registration failed: ${msg}`);
+      result.yakoaError = msg;
+    }
+  } else {
+    if (!apiUrl)
+      runtime2.log("Step 3 – Skipped: apiUrl not set");
+    else if (!registerTxHash)
+      runtime2.log("Step 3 – Skipped: no register tx hash");
+    else if (tokenIdForYakoa == null)
+      runtime2.log("Step 3 – Skipped: tokenId unknown");
+    else
+      runtime2.log("Step 3 – Skipped: contract address not configured");
+  }
   return result;
+};
+var onLogTrigger = (runtime2, log) => {
+  const apiUrl = runtime2.config.apiUrl?.replace(/\/$/, "") ?? "";
+  if (!apiUrl) {
+    runtime2.log("Skipping event store: apiUrl not set");
+    return "skip";
+  }
+  try {
+    const addressHex = bytesToHex(log.address);
+    const topicsHex = log.topics.map((t) => bytesToHex(t));
+    const dataHex = "data" in log && log.data ? bytesToHex(log.data) : "0x";
+    const decoded = decodeEventLog({
+      abi: MODRED_IP_EVENTS_ABI,
+      topics: topicsHex,
+      data: dataHex
+    });
+    const args = decoded.args && typeof decoded.args === "object" && !Array.isArray(decoded.args) ? Object.fromEntries(Object.entries(decoded.args).map(([k, v]) => [k, typeof v === "bigint" ? String(v) : v])) : {};
+    const payload = {
+      eventName: decoded.eventName,
+      contractAddress: addressHex,
+      blockNumber: log.blockNumber != null ? Number(log.blockNumber) : undefined,
+      txHash: bytesToHex(log.txHash),
+      logIndex: log.index,
+      args
+    };
+    const statusCode = runtime2.runInNodeMode((nodeRuntime) => {
+      const http = new ClientCapability2;
+      const bodyBase64 = typeof Buffer !== "undefined" ? Buffer.from(JSON.stringify(payload), "utf-8").toString("base64") : btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+      const resp = http.sendRequest(nodeRuntime, {
+        url: `${nodeRuntime.config.apiUrl.replace(/\/$/, "")}/api/cre-events`,
+        method: "POST",
+        body: bodyBase64,
+        headers: { "Content-Type": "application/json" }
+      }).result();
+      return resp.statusCode;
+    }, consensusMedianAggregation())().result();
+    runtime2.log(`Event ${decoded.eventName} stored (HTTP ${statusCode})`);
+    return "ok";
+  } catch (e) {
+    runtime2.log(`Event decode/store failed: ${e instanceof Error ? e.message : String(e)}`);
+    return "error";
+  }
 };
 var initWorkflow = (config) => {
   const cron = new CronCapability;
-  return [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)];
+  const evmConfig = config.evms?.[0];
+  const modredIP = evmConfig?.modredIPAddress;
+  const consumer = evmConfig?.consumerAddress;
+  const network248 = evmConfig?.chainName && getNetwork({ chainFamily: "evm", chainSelectorName: evmConfig.chainName, isTestnet: true });
+  const topic0Hashes = [
+    eventTopic0("IPRegistered(uint256,address,string)"),
+    eventTopic0("LicenseMinted(uint256,uint256,address)"),
+    eventTopic0("RevenuePaid(uint256,uint256)"),
+    eventTopic0("RoyaltyClaimed(uint256,address,uint256)"),
+    eventTopic0("DisputeRaised(uint256,uint256,address)"),
+    eventTopic0("DisputeResolved(uint256,uint256,bool)"),
+    eventTopic0("IPTransferred(uint256,address,address)"),
+    eventTopic0("IPRegisteredViaCRE(address,uint256,string)"),
+    eventTopic0("LicenseMintedViaCRE(uint256,address,uint256)")
+  ];
+  const addresses = [];
+  if (modredIP && !modredIP.startsWith("REPLACE_"))
+    addresses.push(hexToBase64(modredIP));
+  if (consumer && !consumer.startsWith("REPLACE_"))
+    addresses.push(hexToBase64(consumer));
+  const handlers = [handler(cron.trigger({ schedule: config.schedule }), onCronTrigger)];
+  if (network248 && addresses.length > 0) {
+    const evmClient = new ClientCapability(network248.chainSelector.selector);
+    const topic0Base64 = topic0Hashes.map((h) => hexToBase64(h));
+    handlers.push(handler(evmClient.logTrigger({
+      addresses,
+      topics: [{ values: topic0Base64 }]
+    }), onLogTrigger));
+  }
+  return handlers;
 };
 async function main() {
   const runner = await Runner.newRunner();
