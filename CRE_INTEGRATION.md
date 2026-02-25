@@ -1,6 +1,6 @@
 # Chainlink CRE (Runtime Environment) Integration
 
-The ModredIP contracts are wired to work with **Chainlink CRE**: workflows can register IP assets and mint licenses via signed reports, with verification handled by the Chainlink KeystoneForwarder.
+The ModredIP contracts are wired to work with **Chainlink CRE**: workflows can register IP assets and mint licenses via signed reports, with verification handled by the Chainlink KeystoneForwarder. The workflow also listens to contract events and registers IP with Yakoa for infringement monitoring.
 
 ## Architecture
 
@@ -8,7 +8,7 @@ The ModredIP contracts are wired to work with **Chainlink CRE**: workflows can r
   - `registerIPFor(beneficiary, ipHash, metadata, isEncrypted)` – only callable by the CRE proxy.
   - `mintLicenseByProxy(tokenId, licensee, royaltyPercentage, duration, commercialUse, terms)` – only callable by the CRE proxy.
   - `setCREProxy(address)` – owner sets the trusted CRE consumer address.
-- **ModredIPCREConsumer**: Implements the CRE `IReceiver` interface (via `ReceiverTemplate`). Receives reports from the Forwarder, decodes the instruction, and calls ModredIP.
+- **ModredIPCREConsumer**: Implements the CRE `IReceiver` interface (via `ReceiverTemplate`). Receives reports from the Forwarder, decodes the instruction, and calls ModredIP. Emits `IPRegisteredViaCRE` and `LicenseMintedViaCRE`.
 
 Flow: **CRE Workflow** → signs report → **KeystoneForwarder** (validates) → **ModredIPCREConsumer.onReport()** → **ModredIP** (`registerIPFor` or `mintLicenseByProxy`).
 
@@ -54,6 +54,39 @@ cast send <ModredIP_ADDRESS> "setCREProxy(address)" <ModredIPCREConsumer_ADDRESS
 ```
 
 Or call `modredIP.setCREProxy(consumerAddress)` from your deploy script.
+
+## CRE Workflow: Cron Trigger (3 Steps)
+
+The **cron trigger** runs in order:
+
+1. **Step 1 – Register IP asset**  
+   Builds report from config `demoRegistration` (beneficiary, ipHash, metadata, isEncrypted) and calls `evmClient.writeReport()` to ModredIPCREConsumer → `ModredIP.registerIPFor`.
+
+2. **Step 2 – Mint license for the IP asset**  
+   Builds report from config `demoLicense` for the new token and calls `writeReport()` again → `ModredIP.mintLicenseByProxy`.
+
+3. **Step 3 – Register IP for infringement**  
+   Workflow POSTs to the backend at `apiUrl + '/api/register-ip-yakoa'` with the same inputs as `backend/src/scripts/register-ip-to-yakoa.ts`. The backend calls Yakoa so the IP is monitored for infringement. If `blockNumber` is omitted in the request, the backend fetches it from the chain via the register tx hash.
+
+Config: `apiUrl` in `config.staging.json` / `config.production.json` must be the backend base URL (e.g. `http://localhost:5000`).
+
+## CRE Workflow: EVM Log Trigger (Event Storage)
+
+A second trigger listens to **EVM logs** from ModredIP and ModredIPCREConsumer (addresses and topic0 hashes in config). When a matching log is received:
+
+- **Decoded events** (in the workflow ABI): decoded event name is in `args.decodedEventName`; full decoded args are stored.
+- **Unknown events** (signature not in ABI): stored with raw `eventSignature`, `topics`, and `data` in `args`.
+
+Every stored event uses the **transaction hash** as `eventName` (and `txHash`). Events are POSTed to the backend at `apiUrl + '/api/cre-events'` and appended to **`backend/data/cre-events.jsonl`** (one JSON object per line). The backend also exposes **GET /api/cre-events** to read all stored events.
+
+## Backend APIs Used by CRE
+
+| Endpoint | Purpose |
+|----------|---------|
+| `GET apiUrl` | External API ping (CRE requirement; e.g. Yakoa backend health). |
+| `POST /api/cre-events` | Append one event payload (from EVM log trigger) to `backend/data/cre-events.jsonl`. |
+| `GET /api/cre-events` | Return all stored events from that file (debugging). |
+| `POST /api/register-ip-yakoa` | Register an on-chain IP with Yakoa (same logic as `register-ip-to-yakoa.ts`). Body: `contractAddress`, `tokenId`, `txHash`, `ipHash`, `metadata`, optional `blockNumber`, `isEncrypted`, `creatorId`. If `blockNumber` is missing, the backend fetches it from the chain. |
 
 ## CRE Workflow Example (TypeScript)
 

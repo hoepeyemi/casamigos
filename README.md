@@ -83,6 +83,13 @@ Sear addresses critical pain points in the current IP management landscape:
 - **Registry**: ERC6551Registry for account management
 - **Account**: ERC6551Account for programmable logic
 
+### CRE (Chainlink Runtime Environment)
+- **Workflow**: `cre-workflows/ip-registration-workflow` – cron + EVM log triggers
+- **Cron flow**: (1) Register IP on-chain → (2) Mint license on-chain → (3) Register IP for infringement (backend → Yakoa)
+- **EVM log trigger**: Listens to ModredIP/Consumer events; stores each event in `backend/data/cre-events.jsonl` (one JSON line per event, `eventName` = tx hash)
+- **Backend APIs for CRE**: `POST /api/cre-events` (append events), `GET /api/cre-events` (read stored events), `POST /api/register-ip-yakoa` (register IP with Yakoa after CRE register; same logic as `register-ip-to-yakoa.ts`)
+- See [CRE_INTEGRATION.md](CRE_INTEGRATION.md) and [cre-workflows/README.md](cre-workflows/README.md) for setup and simulation
+
 ### Infrastructure
 - **Blockchain**: Base Sepolia Testnet (Chain ID: 84532)
 - **Storage**: IPFS for censorship-resistant content

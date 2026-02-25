@@ -2,10 +2,11 @@
 
 This folder is a **Chainlink CRE (Runtime Environment)** project. The workflow acts as an **orchestration layer** that:
 
-1. **Integrates one blockchain (Base Sepolia) with an external API** – fetches from a public API (e.g. GitHub), then writes to the ModredIP consumer contract.
-2. **Uses CRE as the orchestration layer** – cron trigger → HTTP capability (external API) → EVM write (onchain).
+1. **Integrates one blockchain (Base Sepolia) with an external API** – fetches from the backend API, then writes to the ModredIP consumer contract and registers IP with Yakoa for infringement monitoring.
+2. **Uses CRE as the orchestration layer** – cron trigger (3 steps: register IP → mint license → register for infringement) and EVM log trigger (store contract events to a file).
+3. **Stores contract events** – EVM log trigger decodes (or stores raw) ModredIP/Consumer events and POSTs them to the backend; they are appended to **`backend/data/cre-events.jsonl`** (one JSON line per event; `eventName` is the transaction hash).
 
-So it satisfies the requirement: *"Integrate at least one blockchain with an external API, system, data source, LLM, or AI agent"* and *"CRE Workflow used as orchestration layer"*.
+This satisfies: *"Integrate at least one blockchain with an external API, system, data source, LLM, or AI agent"* and *"CRE Workflow used as orchestration layer"*.
 
 ## Prerequisites
 
@@ -53,10 +54,12 @@ With a deployed consumer and valid config, use `--broadcast` to send the transac
 cre workflow simulate ip-registration-workflow --target staging-settings --broadcast
 ```
 
-This demonstrates:
+**Trigger options:**
 
-- **External API**: workflow calls `apiUrl` (Yakoa backend: `http://localhost:5000/api/yakoa` when backend is running locally; use your deployed backend URL for production).
-- **Blockchain**: workflow reads `nextTokenId` from ModredIP, then submits two signed reports to **ModredIPCREConsumer**: (1) register IP for `demoRegistration.beneficiary`, (2) mint license for that token (using `demoLicense` in config).
+- **1 – cron-trigger**: Runs the 3-step flow: (1) Register IP on-chain, (2) Mint license on-chain, (3) POST to `apiUrl/api/register-ip-yakoa` to register the IP with Yakoa for infringement. Requires backend running at `apiUrl` (e.g. `http://localhost:5000`).
+- **2 – evm LogTrigger**: Simulates an EVM log event. You provide a transaction hash and event index; the workflow decodes (or stores as Unknown) and POSTs to `apiUrl/api/cre-events`. Events are stored in **`backend/data/cre-events.jsonl`**; each event uses the **transaction hash** as `eventName`.
+
+To avoid interactive prompt (e.g. in CI), pipe the choice: `echo 1 | cre workflow simulate ...` or `echo 2 | cre workflow simulate ...`.
 
 ### CRE workflow vs `yarn test:contract-features`
 
@@ -64,15 +67,16 @@ The CRE workflow mirrors the **onchain parts** that the consumer supports:
 
 | Step | CRE workflow | yarn test:contract-features |
 |------|---------------------------|-----------------------------|
-| Register IP | ✅ Report 1 → `registerIPFor` | ✅ `registerIP` |
-| Mint license | ✅ Report 2 → `mintLicenseByProxy` | ✅ `mintLicense` |
+| Register IP | ✅ Step 1 → Report 1 → `registerIPFor` | ✅ `registerIP` |
+| Mint license | ✅ Step 2 → Report 2 → `mintLicenseByProxy` | ✅ `mintLicense` |
+| Yakoa / infringement | ✅ Step 3 → POST `/api/register-ip-yakoa` (same logic as `register-ip-to-yakoa.ts`) | ✅ at end |
 | Pay revenue | ❌ (no proxy) | ✅ `payRevenue` |
 | Claim royalties | ❌ (no proxy) | ✅ `claimRoyalties` |
 | Register arbitrator | ❌ (no proxy) | ✅ `registerArbitrator` |
 | Disputes | ❌ (different signer) | ✅ optional |
-| Yakoa / infringement | ❌ (backend script) | ✅ at end |
+| Event storage | ✅ EVM log trigger → POST `/api/cre-events` → `backend/data/cre-events.jsonl` | N/A |
 
-For **payRevenue**, **claimRoyalties**, **registerArbitrator**, **disputes**, and **Yakoa infringement**, run `yarn test:contract-features` from the repo root (or use the app/backend). The CRE workflow needs `evms[0].modredIPAddress` (for EVM read of `nextTokenId`) and `demoLicense` (royaltyBps, durationSec, commercialUse, terms) in config for the register + mint-license flow.
+For **payRevenue**, **claimRoyalties**, **registerArbitrator**, and **disputes**, run `yarn test:contract-features` or use the app/backend. The CRE workflow needs `evms[0].modredIPAddress`, `evms[0].consumerAddress`, `apiUrl`, and `demoLicense` in config. Backend must expose `POST /api/register-ip-yakoa` and `POST /api/cre-events` (see [CRE_INTEGRATION.md](../CRE_INTEGRATION.md)).
 
 ## How to test the CRE integration (step-by-step)
 
@@ -119,12 +123,20 @@ If simulation fails with "consumerAddress not configured", set `evms[0].consumer
 
 ## Workflow behavior
 
-- **Trigger:** Cron (schedule in `config.staging.json` / `config.production.json`).
+### Cron trigger
+
+- **Schedule:** From `config.staging.json` / `config.production.json` (e.g. `*/30 * * * * *`).
 - **Steps:**
-  1. HTTP GET to `config.apiUrl` (Yakoa backend; consensus over DON).
-  2. Build report: `instructionType = 0` (register IP) with `demoRegistration` (beneficiary, ipHash, metadata, isEncrypted).
-  3. `runtime.report()` → `evmClient.writeReport()` to `consumerAddress`.
-- **Result:** ModredIPCREConsumer receives the report and calls `ModredIP.registerIPFor(beneficiary, ipHash, metadata, isEncrypted)`.
+  1. **External API:** HTTP GET to `config.apiUrl` (CRE requirement: external data source).
+  2. **Step 1 – Register IP:** Build report `instructionType = 0` with `demoRegistration` → `evmClient.writeReport()` to `consumerAddress` → ModredIPCREConsumer calls `ModredIP.registerIPFor`.
+  3. **Step 2 – Mint license:** Build report `instructionType = 1` with `demoLicense` and the new token id → `writeReport()` → consumer calls `ModredIP.mintLicenseByProxy`.
+  4. **Step 3 – Infringement:** POST to `apiUrl + '/api/register-ip-yakoa'` with contractAddress, tokenId, register tx hash, ipHash, metadata, etc. Backend registers the IP with Yakoa (same logic as `backend/src/scripts/register-ip-to-yakoa.ts`).
+
+### EVM log trigger
+
+- **Filter:** ModredIP and ModredIPCREConsumer addresses; topic0 hashes for IPRegistered, LicenseMinted, RevenuePaid, RoyaltyClaimed, DisputeRaised, DisputeResolved, IPTransferred, IPRegisteredViaCRE, LicenseMintedViaCRE.
+- **On log:** Decode with ABI if possible; otherwise store as Unknown with raw `eventSignature`, `topics`, `data`. Every stored event uses the **transaction hash** as `eventName`.
+- **Storage:** POST payload to `apiUrl + '/api/cre-events'`; backend appends to **`backend/data/cre-events.jsonl`** (one JSON line per event). GET `/api/cre-events` returns all stored events.
 
 ## Deploying to CRE network
 

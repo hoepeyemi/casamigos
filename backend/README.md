@@ -39,6 +39,12 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
 - **Response**: Returns transaction hash, IP asset ID, block number, and explorer URL
 - **Note**: Supports legacy `modredIpContractAddress` parameter for backward compatibility
 
+### CRE workflow integration
+
+- **POST** `/api/cre-events` – Append one CRE event payload (from the CRE EVM log trigger). Body: `eventName`, optional `contractAddress`, `blockNumber`, `txHash`, `logIndex`, `args`. Events are stored in **`backend/data/cre-events.jsonl`** (one JSON object per line; `receivedAt` added server-side). Used by the CRE workflow when it receives contract events.
+- **GET** `/api/cre-events` – Return all stored events from `data/cre-events.jsonl` (for debugging).
+- **POST** `/api/register-ip-yakoa` – Register an on-chain IP with Yakoa (same logic as `src/scripts/register-ip-to-yakoa.ts`). Used by the CRE workflow after register IP + mint license. Body: `contractAddress`, `tokenId`, `txHash`, `ipHash`, `metadata` (string or object), optional `blockNumber`, `isEncrypted`, `creatorId`. If `blockNumber` is omitted, the backend fetches it from the chain via the tx hash. Requires `YAKOA_API_KEY`, `YAKOA_SUBDOMAIN`, `YAKOA_NETWORK` in backend `.env`.
+
 ### Infringement (Yakoa)
 - **GET** `/api/infringement/status/:contractAddress/:tokenId` – infringement status for one IP asset (same as frontend).
 - **GET** `/api/infringement/status-all?contractAddress=0x...` – infringement status for **all IP assets** of the contract. Contract is optional if `MODRED_IP_CONTRACT_ADDRESS` is set in backend `.env` or `app/src/deployed_addresses.json` exists.
@@ -139,6 +145,7 @@ The backend includes advanced automatic retry logic for blockchain transactions:
 
 ## Recent Updates
 
+- ✅ **CRE integration:** `POST /api/cre-events` (append events to `data/cre-events.jsonl`), `GET /api/cre-events` (read stored events), `POST /api/register-ip-yakoa` (register IP with Yakoa; used by CRE workflow after register + mint license; fetches block number from chain if omitted).
 - ✅ Renamed from "ModredIP" to "Sear" throughout the codebase
 - ✅ Added license validation (one license per IP)
 - ✅ Improved nonce handling - removed explicit nonce setting, let viem handle automatically
