@@ -105,10 +105,10 @@ The backend includes advanced automatic retry logic for blockchain transactions:
 - **Nonce Management**: Let viem handle nonce automatically to avoid conflicts (no explicit nonce setting)
 - **Retry Logic**: Automatically retries up to 3 times on nonce conflicts with exponential backoff
 - **HTTP 410 Error Handling**: Detects and handles RPC limitation with `pending` blockTag
-- **"Already Known" Recovery**: Detects when transactions were submitted but errors occurred, searches recent blocks for transaction hash
+- **"Already Known" Recovery**: Detects when transactions were submitted but errors occurred, scans recent blocks for transaction hash
 - **Error Handling**: Provides clear error messages for transaction failures
 - **Race Condition Protection**: Handles concurrent transaction requests gracefully
-- **Transaction Hash Recovery**: Searches last 20 blocks to find transaction hash when "already known" errors occur
+- **Transaction Hash Recovery**: Scans last 20 blocks to find transaction hash when "already known" errors occur
 - **Success Notification**: Returns success response even when transaction hash can't be retrieved (transaction was submitted)
 
 ## Key Features
@@ -128,7 +128,7 @@ The backend includes advanced automatic retry logic for blockchain transactions:
 ### Nonce Errors
 - Detects "already known" and "nonce too low" errors
 - Automatically retries with exponential backoff
-- Searches recent blocks to recover transaction hash
+- Scans recent blocks to recover transaction hash
 - Returns success response if transaction was submitted
 
 ### HTTP 410 Errors (RPC Limitation)
@@ -138,7 +138,7 @@ The backend includes advanced automatic retry logic for blockchain transactions:
 - Automatically retries up to 3 times
 
 ### Transaction Hash Recovery
-- When "already known" error occurs, searches last 20 blocks
+- When "already known" error occurs, scans last 20 blocks
 - Matches transactions by: from address, to address, and function selector
 - If hash found, waits for receipt and returns success
 - If hash not found but error suggests submission, returns success with warning
@@ -153,7 +153,7 @@ The backend includes advanced automatic retry logic for blockchain transactions:
 - ✅ Updated contract address (0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3)
 - ✅ HTTP 410 error detection and handling for RPC `pending` blockTag limitation
 - ✅ "Already known" transaction error detection and recovery
-- ✅ Transaction hash recovery from recent blocks (searches last 20 blocks)
+- ✅ Transaction hash recovery from recent blocks (scans last 20 blocks)
 - ✅ Success response even when transaction hash can't be retrieved
 - ✅ Enhanced retry logic with longer delays for RPC errors (2s, 4s, 6s vs 1s, 2s, 3s)
 - ✅ Improved error detection checking error body, status codes, and nested cause chains 

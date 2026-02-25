@@ -57,7 +57,7 @@ Casamigos addresses critical pain points in the current IP management landscape:
 - **Entertainment Industry**: Film, TV, gaming companies
 - **Publishing**: Authors, publishers, media companies
 - **Technology**: Startups, tech companies
-- **Academic**: Researchers, universities
+- **Academic**: Academic institutions, universities
 
 ---
 
@@ -209,7 +209,7 @@ Casamigos addresses critical pain points in the current IP management landscape:
 
 #### **Pappu Kumar - Head of Product**
 - **Background**: 6+ years in product management
-- **Expertise**: User experience, market research, growth
+- **Expertise**: User experience, market analysis, growth
 - **Focus**: Creator-centric product development
 - **Previous**: Product manager at content platforms
 
@@ -242,7 +242,7 @@ The founders experienced firsthand the challenges of IP management:
 - **Creator Economy**: Direct experience with content creation
 - **IP Law**: Understanding of legal frameworks and challenges
 - **Business Development**: Network in entertainment and tech
-- **User Research**: Extensive interviews with creators and IP holders
+- **User studies**: Extensive interviews with creators and IP holders
 
 ### Vision Alignment
 - **Decentralization**: Belief in blockchain's transformative potential

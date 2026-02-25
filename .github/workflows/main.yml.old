@@ -36,9 +36,9 @@ jobs:
           file: Dockerfile
           push: true
           tags: |
-            ${{ env.DOCKER_USERNAME }}/sear:latest
-          cache-from: type=registry,ref=${{ env.DOCKER_USERNAME }}/sear:buildcache
-          cache-to: type=registry,ref=${{ env.DOCKER_USERNAME }}/sear:buildcache,mode=max
+            ${{ env.DOCKER_USERNAME }}/casamigos:latest
+          cache-from: type=registry,ref=${{ env.DOCKER_USERNAME }}/casamigos:buildcache
+          cache-to: type=registry,ref=${{ env.DOCKER_USERNAME }}/casamigos:buildcache,mode=max
 
       - name: Deploy to Ubuntu server
         uses: appleboy/ssh-action@master
@@ -54,35 +54,35 @@ jobs:
             
             # Stop and remove existing container
             echo "Stopping existing container..."
-            sudo docker stop sear || true
-            sudo docker rm sear || true
+            sudo docker stop casamigos || true
+            sudo docker rm casamigos || true
             
             # Pull latest image
             echo "Pulling latest image..."
-            sudo docker pull ${{ env.DOCKER_USERNAME }}/sear:latest
+            sudo docker pull ${{ env.DOCKER_USERNAME }}/casamigos:latest
             
             # Run new container with env file from server
             echo "Starting new container..."
             sudo docker run -d \
-              --name sear \
+              --name casamigos \
               --restart unless-stopped \
               -p 8082:5001 \
               -v /home/ubuntu/v/.env:/usr/src/app/.env:ro \
-              ${{ env.DOCKER_USERNAME }}/sear:latest
+              ${{ env.DOCKER_USERNAME }}/casamigos:latest
             
             # Verify deployment
             echo "Verifying deployment..."
             sleep 10
             
-            if sudo docker ps | grep -q sear; then
+            if sudo docker ps | grep -q casamigos; then
               echo "✅ Container is running successfully"
-              echo "Container ID: $(sudo docker ps -q -f name=sear)"
+              echo "Container ID: $(sudo docker ps -q -f name=casamigos)"
               echo "Container logs:"
-              sudo docker logs --tail 20 sear
+              sudo docker logs --tail 20 casamigos
             else
               echo "❌ Container failed to start"
               echo "Error logs:"
-              sudo docker logs sear
+              sudo docker logs casamigos
               exit 1
             fi
             
@@ -96,16 +96,16 @@ jobs:
           key: ${{ env.SSH_PRIVATE_KEY }}
           script: |
             # Check container status
-            if sudo docker ps | grep -q sear; then
+            if sudo docker ps | grep -q casamigos; then
               echo "Container Status: Running"
               echo "Container Details:"
-              sudo docker inspect sear --format='Status: {{.State.Status}} | Started At: {{.State.StartedAt}}'
+              sudo docker inspect casamigos --format='Status: {{.State.Status}} | Started At: {{.State.StartedAt}}'
               echo "Port Mapping:"
-              sudo docker port sear
+              sudo docker port casamigos
               
               # Verify env file is mounted
               echo "Checking environment file:"
-              sudo docker exec sear ls -la /usr/src/app/.env || echo "Environment file not found!"
+              sudo docker exec casamigos ls -la /usr/src/app/.env || echo "Environment file not found!"
             else
               echo "Container is not running"
               exit 1

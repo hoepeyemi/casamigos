@@ -130,7 +130,7 @@ The backend includes advanced transaction reliability features:
 
 ### Error Recovery
 - **"Already Known" Detection**: Detects when transactions were submitted but errors occurred
-- **Transaction Hash Recovery**: Searches last 20 blocks to find transaction hash
+- **Transaction Hash Recovery**: Scans last 20 blocks to find transaction hash
 - **HTTP 410 Handling**: Handles RPC limitation with `pending` blockTag
 - **Success Guarantee**: Returns success even when transaction hash can't be retrieved
 

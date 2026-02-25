@@ -248,8 +248,8 @@ export const registerIpOnBaseSepolia = async (
                                     continue;
                                 }
                             }
-                        } catch (searchError) {
-                            console.log(`⚠️ Could not find transaction hash:`, searchError);
+                        } catch (fetchError) {
+                            console.log(`⚠️ Could not find transaction hash:`, fetchError);
                         }
                         
                         // If we still don't have a hash, throw the error to trigger retry logic
@@ -446,8 +446,8 @@ export const mintLicenseOnBaseSepolia = async (
                                     continue;
                                 }
                             }
-                        } catch (searchError) {
-                            console.log(`⚠️ Could not find transaction hash:`, searchError);
+                        } catch (fetchError) {
+                            console.log(`⚠️ Could not find transaction hash:`, fetchError);
                         }
                         
                         // If we still don't have a hash, throw the error to trigger retry logic
