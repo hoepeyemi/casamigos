@@ -284,7 +284,7 @@ const wallets = [
 ];
 
 // Casamigos Contract ABI (simplified for the functions we need)
-const SEAR_ABI = [
+const CASAMIGOS_ABI = [
   {
     inputs: [
       { name: "tokenId", type: "uint256" }
@@ -1059,7 +1059,7 @@ export default function App({ thirdwebClient }: AppProps) {
 
     try {
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: CASAMIGOS_ABI,
         client: thirdwebClient,
         chain: defineChain(baseSepolia.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -1367,7 +1367,7 @@ export default function App({ thirdwebClient }: AppProps) {
       console.log("📋 Using Casamigos Contract:", contractAddress);
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: CASAMIGOS_ABI,
         client: thirdwebClient,
         chain: defineChain(baseSepolia.id),
         address: contractAddress,
@@ -1571,7 +1571,7 @@ export default function App({ thirdwebClient }: AppProps) {
         license_type: 'all_rights_reserved',
         commercial_use: false,
         derivatives_allowed: false,
-        creator_email: 'creator@sear.com', // Could be enhanced with user input
+        creator_email: 'creator@casamigos.com', // Could be enhanced with user input
         // File-specific metadata
         file_name: ipFile?.name || 'unknown',
         file_extension: ipFile?.name?.split('.').pop() || 'unknown',
@@ -1619,7 +1619,7 @@ export default function App({ thirdwebClient }: AppProps) {
           ipHash: ipHash,
           metadata: JSON.stringify(ipMetadata),
           isEncrypted: isEncrypted,
-          searContractAddress: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
+          casamigosContractAddress: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
           skipContractCall: false // V2 contract has registerIP function, so this should be false
         })
       });
@@ -1770,7 +1770,7 @@ export default function App({ thirdwebClient }: AppProps) {
           duration: licenseDuration,
           commercialUse: commercialUse,
           terms: licenseTerms.terms,
-          searContractAddress: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"]
+          casamigosContractAddress: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"]
         })
       });
 
@@ -1876,7 +1876,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Processing Payment', `Paying ${paymentAmount} ETH in revenue...`);
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: CASAMIGOS_ABI,
         client: thirdwebClient,
         chain: defineChain(baseSepolia.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -1957,7 +1957,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Claiming Royalties', 'Processing royalty claim...');
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: CASAMIGOS_ABI,
         client: thirdwebClient,
         chain: defineChain(baseSepolia.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2039,7 +2039,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Raising Dispute', 'Submitting dispute...');
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: CASAMIGOS_ABI,
         client: thirdwebClient,
         chain: defineChain(baseSepolia.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2095,7 +2095,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Registering Arbitrator', `Registering with ${minArbitratorStake} ETH stake...`);
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: CASAMIGOS_ABI,
         client: thirdwebClient,
         chain: defineChain(baseSepolia.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2140,7 +2140,7 @@ export default function App({ thirdwebClient }: AppProps) {
 
       // Check arbitrator status before unstaking
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: CASAMIGOS_ABI,
         client: thirdwebClient,
         chain: defineChain(baseSepolia.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2241,7 +2241,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Assigning Arbitrators', `Assigning ${selectedArbitrators.length} arbitrator(s) to dispute...`);
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: CASAMIGOS_ABI,
         client: thirdwebClient,
         chain: defineChain(baseSepolia.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2298,7 +2298,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Checking Resolution', 'Checking if dispute can be resolved after 24h wait period...');
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: CASAMIGOS_ABI,
         client: thirdwebClient,
         chain: defineChain(baseSepolia.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2376,7 +2376,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Transferring IP', 'Initiating IP asset transfer...');
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: CASAMIGOS_ABI,
         client: thirdwebClient,
         chain: defineChain(baseSepolia.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2483,7 +2483,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Resolving Dispute', 'Resolving dispute without arbitrators...');
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: CASAMIGOS_ABI,
         client: thirdwebClient,
         chain: defineChain(baseSepolia.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2538,7 +2538,7 @@ export default function App({ thirdwebClient }: AppProps) {
       notifyInfo('Submitting Decision', 'Submitting arbitration decision...');
 
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: CASAMIGOS_ABI,
         client: thirdwebClient,
         chain: defineChain(baseSepolia.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2578,7 +2578,7 @@ export default function App({ thirdwebClient }: AppProps) {
 
     try {
       const contract = getContract({
-        abi: SEAR_ABI,
+        abi: CASAMIGOS_ABI,
         client: thirdwebClient,
         chain: defineChain(baseSepolia.id),
         address: CONTRACT_ADDRESSES["ModredIPModule#ModredIP"],
@@ -2903,7 +2903,7 @@ export default function App({ thirdwebClient }: AppProps) {
         <header className="header">
           <div className="header-container">
             <div className="header-logo">
-              <img src="/sear.png" alt="Casamigos" className="logo-image" />
+              <img src="/casamigos.png" alt="Casamigos" className="logo-image" />
               <h1>Casamigos</h1>
             </div>
             <div className="header-actions">
@@ -3095,7 +3095,7 @@ export default function App({ thirdwebClient }: AppProps) {
       <header className="header">
         <div className="header-container">
           <div className="header-logo">
-            <img src="/sear.png" alt="Casamigos" className="logo-image" />
+            <img src="/casamigos.png" alt="Casamigos" className="logo-image" />
             <h1>Casamigos</h1>
           </div>
           <div className="header-actions">

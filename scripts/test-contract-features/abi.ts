@@ -1,5 +1,5 @@
 /**
- * ModredIP ABI subset used by the frontend (same as App.tsx SEAR_ABI).
+ * ModredIP ABI subset used by the frontend (same as App.tsx CASAMIGOS_ABI).
  * Used by test scripts to call the contract.
  */
 export const MODRED_IP_ABI = [

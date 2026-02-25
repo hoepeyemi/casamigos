@@ -32,7 +32,7 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
     "ipHash": "ipfs://Qm...",
     "metadata": "{\"name\":\"IP Asset Name\",\"description\":\"...\",...}",
     "isEncrypted": false,
-    "searContractAddress": "0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3",
+    "casamigosContractAddress": "0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3",
     "skipContractCall": false
   }
   ```
@@ -61,7 +61,7 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
     "duration": 86400,
     "commercialUse": true,
     "terms": "{\"transferable\":true,\"commercialAttribution\":true,...}",
-    "searContractAddress": "0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3"
+    "casamigosContractAddress": "0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3"
   }
   ```
 - **Validation**: Automatically checks if a license already exists for the IP asset
@@ -78,7 +78,7 @@ NFT_CONTRACT_ADDRESS=optional_nft_contract_address
 
 ## Smart Contracts
 
-- **Sear**: Main contract for IP registration and license management
+- **ModredIP (Casamigos)**: Main contract for IP registration and license management
 - **ERC6551Registry**: Token-bound account registry
 - **ERC6551Account**: Token-bound account implementation
 
@@ -115,7 +115,7 @@ The backend includes advanced automatic retry logic for blockchain transactions:
 
 1. **Network**: Base Sepolia (Chain ID: 84532)
 2. **Token**: Using native ETH for transactions
-3. **Contracts**: Sear contract for IP management
+3. **Contracts**: ModredIP (Casamigos) contract for IP management
 4. **License Validation**: Enforces one license per IP asset
 5. **Transaction Reliability**: Automatic retry with intelligent nonce management
 6. **Error Handling**: Comprehensive error messages and recovery
@@ -146,7 +146,7 @@ The backend includes advanced automatic retry logic for blockchain transactions:
 ## Recent Updates
 
 - ✅ **CRE integration:** `POST /api/cre-events` (append events to `data/cre-events.jsonl`), `GET /api/cre-events` (read stored events), `POST /api/register-ip-yakoa` (register IP with Yakoa; used by CRE workflow after register + mint license; fetches block number from chain if omitted).
-- ✅ Renamed from "ModredIP" to "Sear" throughout the codebase
+- ✅ Application branded as Casamigos; ModredIP contract for IP management
 - ✅ Added license validation (one license per IP)
 - ✅ Improved nonce handling - removed explicit nonce setting, let viem handle automatically
 - ✅ Enhanced error messages and user feedback

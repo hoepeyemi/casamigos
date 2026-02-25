@@ -9,7 +9,7 @@
    $env:DEPLOYER_PRIVATE_KEY = "your_private_key_without_0x_prefix"
    ```
    
-   **Or create a `.env` file** in the `searalt` directory:
+   **Or create a `.env` file** in the project (or `casamigos`) directory:
    ```
    DEPLOYER_PRIVATE_KEY=your_private_key_without_0x_prefix
    ```

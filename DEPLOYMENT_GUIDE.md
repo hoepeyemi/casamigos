@@ -7,7 +7,7 @@ The application is currently using the V2 contract:
 - **Contract Key**: `ModredIPModule#ModredIP` (maintained for compatibility)
 - **Status**: ✅ Active and verified to have `registerIP` function
 
-**Note**: The contract key name "ModredIPModule#ModredIP" is maintained for backward compatibility, but the application is branded as "Sear".
+**Note**: The contract key name "ModredIPModule#ModredIP" is maintained for backward compatibility, but the application is branded as "Casamigos".
 
 ## Option 2: Deploy a New Contract
 
@@ -15,7 +15,7 @@ The application is currently using the V2 contract:
 
 1. Install dependencies:
    ```bash
-   cd sear
+   cd casamigos
    yarn install
    ```
 
@@ -40,7 +40,7 @@ The application is currently using the V2 contract:
    }
    ```
    
-   **Note**: The key "ModredIPModule#ModredIP" is maintained for compatibility, but the application name is "Sear".
+   **Note**: The key "ModredIPModule#ModredIP" is maintained for compatibility, but the application name is "Casamigos".
 
 3. **Verify the contract** (optional):
    ```bash
@@ -80,7 +80,7 @@ To check if a contract has the `registerIP` function:
 
 ## Contract Source
 
-The contract source is at: `searalt/contracts/ModredIP.sol`
+The contract source is at: `contracts/ModredIP.sol`
 
 ### Key Functions
 

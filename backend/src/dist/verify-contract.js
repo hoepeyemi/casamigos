@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const config_1 = require("./utils/config");
 const viem_1 = require("viem");
-// Sear contract ABI (simplified for IP registration)
-const SEAR_ABI = [
+// Casamigos (ModredIP) contract ABI (simplified for IP registration)
+const CASAMIGOS_ABI = [
     {
         "inputs": [
             {
@@ -50,7 +50,7 @@ async function verifyContract(contractAddress, contractName) {
         // 2. Try to encode the function call
         try {
             const functionData = (0, viem_1.encodeFunctionData)({
-                abi: SEAR_ABI,
+                abi: CASAMIGOS_ABI,
                 functionName: 'registerIP',
                 args: ['ipfs://test', '{"test":"data"}', false],
             });
@@ -64,7 +64,7 @@ async function verifyContract(contractAddress, contractName) {
         try {
             const gasEstimate = await config_1.publicClient.estimateContractGas({
                 address: contractAddress,
-                abi: SEAR_ABI,
+                abi: CASAMIGOS_ABI,
                 functionName: 'registerIP',
                 args: ['ipfs://test', '{"test":"data"}', false],
                 account: config_1.account.address,
@@ -100,8 +100,8 @@ async function main() {
     console.log('='.repeat(60));
     const v1Address = '0x0734d90FA1857C073c4bf1e57f4F4151BE2e9f82';
     const v2Address = '0x2D0456CE5e446ef9C8f513832a0bd361201990Ab';
-    const v1HasFunction = await verifyContract(v1Address, 'Sear Module V1');
-    const v2HasFunction = await verifyContract(v2Address, 'Sear Module V2');
+    const v1HasFunction = await verifyContract(v1Address, 'Casamigos Module V1');
+    const v2HasFunction = await verifyContract(v2Address, 'Casamigos Module V2');
     console.log('\n' + '='.repeat(60));
     console.log('\n📊 SUMMARY:');
     console.log(`V1 Contract (${v1Address.substring(0, 10)}...): ${v1HasFunction ? '✅ HAS registerIP' : '❌ NO registerIP'}`);

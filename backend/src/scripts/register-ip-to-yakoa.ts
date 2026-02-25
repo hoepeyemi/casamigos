@@ -105,7 +105,7 @@ async function main() {
       brand_name: null as string | null,
       data: {
         type: "email" as const,
-        email_address: (parsedMetadata.creator_email as string) || "creator@sear.com",
+        email_address: (parsedMetadata.creator_email as string) || "creator@casamigos.com",
       },
     },
   ];

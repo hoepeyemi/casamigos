@@ -5,7 +5,7 @@ export interface LicenseRequest {
     duration: number;
     commercialUse: boolean;
     terms: string;
-    searContractAddress: Address;
+    casamigosContractAddress: Address;
 }
 export declare const mintLicense: (licenseRequest: LicenseRequest) => Promise<any>;
 export declare const getLicenseExplorerUrl: (txHash: string) => string;

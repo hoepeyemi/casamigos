@@ -1,4 +1,4 @@
-# 🚀 Sear - Revolutionary IP Management Platform
+# 🚀 Casamigos - Revolutionary IP Management Platform
 
 > **The Future of Intellectual Property Management on Blockchain**
 
@@ -30,14 +30,14 @@
 To democratize intellectual property management by creating a decentralized, transparent, and automated platform that empowers creators to protect, monetize, and manage their IP assets with unprecedented efficiency.
 
 ### Mission
-Sear revolutionizes IP management by combining blockchain technology with AI-powered infringement detection, creating a comprehensive ecosystem where creators can register, license, monetize, and protect their intellectual property with built-in enforcement mechanisms.
+Casamigos revolutionizes IP management by combining blockchain technology with AI-powered infringement detection, creating a comprehensive ecosystem where creators can register, license, monetize, and protect their intellectual property with built-in enforcement mechanisms.
 
 ---
 
 ## 💼 Business Model
 
 ### Core Value Proposition
-Sear addresses critical pain points in the current IP management landscape:
+Casamigos addresses critical pain points in the current IP management landscape:
 
 1. **Fragmented IP Management**: Centralized platform for all IP lifecycle
 2. **Inefficient Licensing**: Automated, programmable licensing terms
@@ -89,6 +89,25 @@ Sear addresses critical pain points in the current IP management landscape:
 - **EVM log trigger**: Listens to ModredIP/Consumer events; stores each event in `backend/data/cre-events.jsonl` (one JSON line per event, `eventName` = tx hash)
 - **Backend APIs for CRE**: `POST /api/cre-events` (append events), `GET /api/cre-events` (read stored events), `POST /api/register-ip-yakoa` (register IP with Yakoa after CRE register; same logic as `register-ip-to-yakoa.ts`)
 - See [CRE_INTEGRATION.md](CRE_INTEGRATION.md) and [cre-workflows/README.md](cre-workflows/README.md) for setup and simulation
+
+**Files that use Chainlink (CRE / Forwarder):**
+
+| Area | File | Purpose |
+|------|------|---------|
+| **Workflow** | [cre-workflows/ip-registration-workflow/main.ts](cre-workflows/ip-registration-workflow/main.ts) | CRE workflow: `@chainlink/cre-sdk`, cron + EVM log triggers, report encoding, writeReport, event decode/store |
+| **Workflow config** | [cre-workflows/project.yaml](cre-workflows/project.yaml) | CRE project configuration ([Chainlink CRE project config](https://docs.chain.link/cre/reference/project-configuration-ts)) |
+| **Contracts** | [contracts/ModredIP.sol](contracts/ModredIP.sol) | CRE proxy (`onlyCREProxy`), `registerIPFor` / `mintLicenseByProxy`, `setCREProxy` |
+| | [contracts/ModredIPCREConsumer.sol](contracts/ModredIPCREConsumer.sol) | Chainlink CRE consumer: receives reports from KeystoneForwarder, calls ModredIP |
+| | [contracts/cre/IReceiver.sol](contracts/cre/IReceiver.sol) | Chainlink CRE `IReceiver` interface (keystone reports) |
+| | [contracts/cre/ReceiverTemplate.sol](contracts/cre/ReceiverTemplate.sol) | Abstract receiver for Chainlink CRE reports (Forwarder validation) |
+| **Deploy** | [ignition/constants.ts](ignition/constants.ts) | CRE Forwarder address (Base Sepolia; [Forwarder Directory](https://docs.chain.link/cre/guides/workflow/using-evm-client/forwarder-directory)) |
+| | [ignition/modules/ModredIPCREConsumer.ts](ignition/modules/ModredIPCREConsumer.ts) | Deploy ModredIPCREConsumer with Forwarder + ModredIP address |
+| **Backend (used by CRE)** | [backend/src/routes/creEvents.ts](backend/src/routes/creEvents.ts) | `POST/GET /api/cre-events` – append/read events to `data/cre-events.jsonl` |
+| | [backend/src/routes/registerIpYakoa.ts](backend/src/routes/registerIpYakoa.ts) | `POST /api/register-ip-yakoa` – register IP with Yakoa (called after CRE register + mint) |
+| **Docs** | [CRE_INTEGRATION.md](CRE_INTEGRATION.md) | CRE architecture, report format, workflow steps, backend APIs |
+| | [cre-workflows/README.md](cre-workflows/README.md) | CRE workflow setup, simulation, cron vs EVM log trigger |
+| | [TESTING.md](TESTING.md) | Testing contracts and CRE workflow (simulate, broadcast) |
+| | [DEPLOY_INSTRUCTIONS.md](DEPLOY_INSTRUCTIONS.md) | Full deploy including CRE consumer and Forwarder |
 
 ### Infrastructure
 - **Blockchain**: Base Sepolia Testnet (Chain ID: 84532)
@@ -347,10 +366,10 @@ The founders experienced firsthand the challenges of IP management:
 ### Quick Start
 ```bash
 # Clone the repository
-git clone https://github.com/sear/sear-platform.git
+git clone https://github.com/casamigos/casamigos-platform.git
 
 # Install dependencies
-cd sear-platform
+cd casamigos-platform
 npm install
 
 # Start development server
@@ -375,6 +394,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-**Built with ❤️ by the Sear Team**
+**Built with ❤️ by the Casamigos Team**
 
 *Empowering creators to protect and monetize their intellectual property through blockchain technology.*

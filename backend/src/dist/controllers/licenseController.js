@@ -5,12 +5,12 @@ const bigIntSerializer_1 = require("../utils/bigIntSerializer");
 const handleLicenseMinting = async (req, res) => {
     console.log("🔥 Entered handleLicenseMinting");
     try {
-        const { tokenId, royaltyPercentage, duration, commercialUse, terms, searContractAddress } = req.body;
+        const { tokenId, royaltyPercentage, duration, commercialUse, terms, casamigosContractAddress } = req.body;
         console.log("📦 Received license request:", req.body);
         // Validate required parameters
-        if (!tokenId || !royaltyPercentage || !duration || commercialUse === undefined || !terms || !searContractAddress) {
+        if (!tokenId || !royaltyPercentage || !duration || commercialUse === undefined || !terms || !casamigosContractAddress) {
             return res.status(400).json({
-                error: 'Missing required parameters: tokenId, royaltyPercentage, duration, commercialUse, terms, searContractAddress'
+                error: 'Missing required parameters: tokenId, royaltyPercentage, duration, commercialUse, terms, casamigosContractAddress'
             });
         }
         const licenseRequest = {
@@ -19,7 +19,7 @@ const handleLicenseMinting = async (req, res) => {
             duration,
             commercialUse,
             terms,
-            searContractAddress
+            casamigosContractAddress
         };
         const result = await (0, licenseService_1.mintLicense)(licenseRequest);
         if (result.success) {

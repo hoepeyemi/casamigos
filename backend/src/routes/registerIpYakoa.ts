@@ -131,7 +131,7 @@ router.post("/", async (req, res) => {
         data: {
           type: "email" as const,
           email_address:
-            (parsedMetadata.creator_email as string) || "creator@sear.com",
+            (parsedMetadata.creator_email as string) || "creator@casamigos.com",
         },
       },
     ];
