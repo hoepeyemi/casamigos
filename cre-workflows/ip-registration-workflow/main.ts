@@ -330,13 +330,24 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLogPayload): string => {
     runtime.log("Skipping event store: apiUrl not set");
     return "skip";
   }
+  const addressHex = bytesToHex(log.address);
+  const topicsHex = log.topics.map((t) => bytesToHex(t));
+  const dataHex = "data" in log && log.data ? bytesToHex((log as { data: Uint8Array }).data) : "0x";
+  const topic0Hex = topicsHex[0] ?? "0x";
+  const txHashHex = bytesToHex(log.txHash);
+
+  let payload: {
+    eventName: string;
+    contractAddress: string;
+    blockNumber?: number;
+    txHash: string;
+    logIndex?: number;
+    args: Record<string, unknown>;
+  };
   try {
-    const addressHex = bytesToHex(log.address) as Address;
-    const topicsHex = log.topics.map((t) => bytesToHex(t)) as [`0x${string}`, ...`0x${string}`[]];
-    const dataHex = "data" in log && log.data ? bytesToHex((log as { data: Uint8Array }).data) : "0x";
     const decoded = decodeEventLog({
       abi: MODRED_IP_EVENTS_ABI,
-      topics: topicsHex,
+      topics: topicsHex as [`0x${string}`, ...`0x${string}`[]],
       data: dataHex as `0x${string}`,
     });
     const args =
@@ -345,14 +356,32 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLogPayload): string => {
             Object.entries(decoded.args).map(([k, v]) => [k, typeof v === "bigint" ? String(v) : v])
           )
         : {};
-    const payload = {
-      eventName: decoded.eventName,
+    payload = {
+      eventName: txHashHex,
       contractAddress: addressHex,
       blockNumber: log.blockNumber != null ? Number(log.blockNumber) : undefined,
-      txHash: bytesToHex(log.txHash),
+      txHash: txHashHex,
       logIndex: log.index,
-      args,
+      args: { ...args, decodedEventName: decoded.eventName },
     };
+  } catch {
+    // Unknown event signature (e.g. from another contract or not in our ABI): store raw log
+    payload = {
+      eventName: txHashHex,
+      contractAddress: addressHex,
+      blockNumber: log.blockNumber != null ? Number(log.blockNumber) : undefined,
+      txHash: txHashHex,
+      logIndex: log.index,
+      args: {
+        eventSignature: topic0Hex,
+        topics: topicsHex,
+        data: dataHex,
+      },
+    };
+    runtime.log(`Event signature ${topic0Hex} not in ABI; storing as ${txHashHex}`);
+  }
+
+  try {
     const statusCode = runtime
       .runInNodeMode(
         (nodeRuntime: NodeRuntime<Config>) => {
@@ -372,10 +401,10 @@ const onLogTrigger = (runtime: Runtime<Config>, log: EVMLogPayload): string => {
         consensusMedianAggregation<number>()
       )()
       .result();
-    runtime.log(`Event ${decoded.eventName} stored (HTTP ${statusCode})`);
+    runtime.log(`Event ${payload.eventName} stored (HTTP ${statusCode})`);
     return "ok";
   } catch (e) {
-    runtime.log(`Event decode/store failed: ${e instanceof Error ? e.message : String(e)}`);
+    runtime.log(`Event store failed: ${e instanceof Error ? e.message : String(e)}`);
     return "error";
   }
 };
