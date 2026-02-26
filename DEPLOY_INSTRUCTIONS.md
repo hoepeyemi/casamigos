@@ -39,7 +39,7 @@ To deploy **everything in one go** (ERC6551Registry, ERC6551Account, ModredIP, *
 .\deploy-full.ps1
 ```
 
-The CRE consumer uses the default Forwarder from `ignition/constants.ts` (`0x15fc6ae953e024d975e77382eeec56a9101f9f88`). To override:
+The CRE consumer uses the default Forwarder from `ignition/constants.ts` (`0x82300bd7c3958625581cc2f77bc6464dcecdf3e5`). To override:
 ```powershell
 $env:CRE_FORWARDER_ADDRESS = "0x..."; .\deploy-full.ps1
 ```
@@ -57,7 +57,7 @@ After full-stack deploy, the CLI prints addresses for `FullStackModule#modredIP`
 
 ### Redeploying to use the CRE forwarder
 
-The CRE forwarder address is set in **`ignition/constants.ts`** (`0x15fc6ae953e024d975e77382eeec56a9101f9f88`). To redeploy so the consumer uses it:
+The CRE forwarder address is set in **`ignition/constants.ts`** (`0x82300bd7c3958625581cc2f77bc6464dcecdf3e5`). To redeploy so the consumer uses it:
 
 1. **Redeploy the full stack** (recommended if you want a clean deploy):
    ```powershell
@@ -71,7 +71,7 @@ The CRE forwarder address is set in **`ignition/constants.ts`** (`0x15fc6ae953e0
    ```
    Then call `ModredIP.setCREProxy(newConsumerAddress)` from the ModredIP owner account and update `app/src/deployed_addresses.json` and CRE workflow config with the new consumer address.
 
-3. **Or update forwarder on an existing consumer** (if the consumer is already deployed and you only changed the constant): as the consumer owner, call `consumer.setForwarderAddress("0x15fc6ae953e024d975e77382eeec56a9101f9f88")`. No redeploy needed.
+3. **Or update forwarder on an existing consumer** (if the consumer is already deployed and you only changed the constant): as the consumer owner, call `consumer.setForwarderAddress("0x82300bd7c3958625581cc2f77bc6464dcecdf3e5")`. No redeploy needed.
 
 ## Step 3: Update Contract Address
 

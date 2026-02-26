@@ -1,6 +1,6 @@
 # Deploy FULL STACK to Base Sepolia: ModredIP + ERC6551 + CRE Consumer
 # Requires: DEPLOYER_PRIVATE_KEY
-# CRE Forwarder: default is in ignition/constants.ts (0x15fc6ae953e024d975e77382eeec56a9101f9f88). Override with CRE_FORWARDER_ADDRESS.
+# CRE Forwarder: default is in ignition/constants.ts (0x82300bd7c3958625581cc2f77bc6464dcecdf3e5). Override with CRE_FORWARDER_ADDRESS.
 
 param(
     [string]$ForwarderAddress = $env:CRE_FORWARDER_ADDRESS

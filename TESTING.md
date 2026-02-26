@@ -97,7 +97,7 @@ The workflow calls an external API then sends a report to **ModredIPCREConsumer*
 
 - **Bun** 1.2.21+  
 - **CRE CLI** installed and **logged in** (`cre login`)
-- **Consumer address** in workflow config (already set to `0xcBE19598bC8443616A55c0BeD139f9048cb50B06`)
+- **Consumer address** in workflow config (already set to `0x7745346B3e296e58Fd4A5D4E802144f1Facea8a0`)
 
 ### Simulation only (no onchain tx)
 
@@ -130,7 +130,7 @@ To have the workflow actually call the consumer and register an IP on Base Sepol
    cre workflow simulate ip-registration-workflow --target staging-settings --broadcast
    ```
 
-The workflow will submit a signed report to the Forwarder; the Forwarder will call your **ModredIPCREConsumer** at `0xcBE19598bC8443616A55c0BeD139f9048cb50B06`, which will call **ModredIP.registerIPFor(beneficiary, ...)**. Check the new NFT for `beneficiary` on Base Sepolia (e.g. on Basescan).
+The workflow will submit a signed report to the Forwarder; the Forwarder will call your **ModredIPCREConsumer** at `0x7745346B3e296e58Fd4A5D4E802144f1Facea8a0`, which will call **ModredIP.registerIPFor(beneficiary, ...)**. Check the new NFT for `beneficiary` on Base Sepolia (e.g. on Basescan).
 
 ---
 

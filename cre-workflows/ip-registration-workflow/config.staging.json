@@ -3,13 +3,13 @@
   "apiUrl": "http://localhost:5000",
   "evms": [{
     "chainName": "ethereum-testnet-sepolia-base-1",
-    "modredIPAddress": "0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3",
-    "consumerAddress": "0xcBE19598bC8443616A55c0BeD139f9048cb50B06",
+    "modredIPAddress": "0x5f3801efa089F9ee664c2Ade045735646A2eAA64",
+    "consumerAddress": "0x7745346B3e296e58Fd4A5D4E802144f1Facea8a0",
     "gasLimit": "500000"
   }],
   "demoRegistration": {
     "beneficiary": "0x9404966338eB27aF420a952574d777598Bbb58c4",
-    "ipHash": "QmCREDemoHash123456789",
+    "ipHash": "Qmepw3bzzNjbewrKRQkMb3ZXRoeAWhoGvwU4ksjmG4PMHq",
     "metadata": "{\"name\":\"CRE Demo IP\",\"source\":\"github\"}",
     "isEncrypted": false
   },

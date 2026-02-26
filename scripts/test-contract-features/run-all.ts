@@ -7,11 +7,36 @@
  * Or:  npm run test:contract-features
  */
 
-import { parseEther, formatEther } from "viem";
+import { parseEther, formatEther, decodeEventLog } from "viem";
 import { getConfig, getTestInputs } from "./config";
 import { MODRED_IP_ABI } from "./abi";
 
+const IP_REGISTERED_EVENT = {
+  type: "event",
+  name: "IPRegistered",
+  inputs: [
+    { name: "tokenId", type: "uint256", indexed: true },
+    { name: "owner", type: "address", indexed: true },
+    { name: "ipHash", type: "string", indexed: false },
+  ],
+} as const;
+
 const log = (msg: string) => console.log("[test]", msg);
+
+/** Get current nonce for main account. Use 'pending' so RPC includes just-mined txs (avoids "nonce too low"). */
+async function getNextNonce(
+  publicClient: {
+    getTransactionCount: (args: { address: `0x${string}`; blockTag?: "pending" | "latest" }) => Promise<number>;
+  },
+  account: { address: `0x${string}` }
+): Promise<number> {
+  return publicClient.getTransactionCount({ address: account.address, blockTag: "pending" });
+}
+
+/** Short delay so RPC state includes the last confirmed tx before we fetch nonce for the next one. */
+function delayMs(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 async function main() {
   const { modredIPAddress, publicClient, walletClient, mainAccount, disputerWalletClient } = getConfig();
@@ -57,16 +82,41 @@ async function main() {
     functionName: "registerIP",
     args: [inputs.ipHash, inputs.metadata, inputs.isEncrypted],
     account: mainAccount,
+    nonce: await getNextNonce(publicClient, mainAccount),
   });
   log("   tx: " + hash);
   const registerReceipt = await publicClient.waitForTransactionReceipt({ hash });
   log("   tx confirmed");
+  await delayMs(1200);
 
-  const tokenId = await publicClient.readContract({
-    address: modredIPAddress,
-    abi: MODRED_IP_ABI,
-    functionName: "nextTokenId",
-  }).then((n) => Number(n) - 1);
+  // Derive new tokenId from IPRegistered event (contract is 1-based: first token = 1)
+  let tokenId = 0;
+  const contractLogs = registerReceipt.logs.filter(
+    (l) => l.address.toLowerCase() === modredIPAddress.toLowerCase()
+  );
+  let found = false;
+  for (const logEntry of contractLogs) {
+    try {
+      const decoded = decodeEventLog({
+        abi: [IP_REGISTERED_EVENT],
+        data: logEntry.data,
+        topics: logEntry.topics,
+      });
+      tokenId = Number((decoded.args as { tokenId: bigint }).tokenId);
+      found = true;
+      break;
+    } catch {
+      /* not IPRegistered, try next */
+    }
+  }
+  if (!found) {
+    const next = await publicClient.readContract({
+      address: modredIPAddress,
+      abi: MODRED_IP_ABI,
+      functionName: "nextTokenId",
+    });
+    tokenId = Math.max(0, Number(next) - 1);
+  }
   log("   new tokenId = " + tokenId);
 
   // Register this IP with Yakoa so the infringement check can find it (same as frontend → backend flow)
@@ -114,9 +164,11 @@ async function main() {
     functionName: "mintLicense",
     args: [BigInt(tokenId), inputs.royaltyBps, inputs.durationSec, inputs.commercialUse, inputs.terms],
     account: mainAccount,
+    nonce: await getNextNonce(publicClient, mainAccount),
   });
   log("   tx: " + licenseTxHash);
   await publicClient.waitForTransactionReceipt({ hash: licenseTxHash });
+  await delayMs(1200);
   const licenseId = Number(nextLicenseId);
   log("   new licenseId = " + licenseId);
 
@@ -139,9 +191,11 @@ async function main() {
     args: [BigInt(tokenId)],
     value: parseEther(inputs.payRevenueEth),
     account: mainAccount,
+    nonce: await getNextNonce(publicClient, mainAccount),
   });
   log("   tx: " + payTxHash);
   await publicClient.waitForTransactionReceipt({ hash: payTxHash });
+  await delayMs(1200);
 
   // --- getRoyaltyInfo ---
   log("9. getRoyaltyInfo(tokenId, account)");
@@ -161,9 +215,11 @@ async function main() {
     functionName: "claimRoyalties",
     args: [BigInt(tokenId)],
     account: mainAccount,
+    nonce: await getNextNonce(publicClient, mainAccount),
   });
   log("   tx: " + claimTxHash);
   await publicClient.waitForTransactionReceipt({ hash: claimTxHash });
+  await delayMs(1200);
 
   // --- Raise dispute (frontend: raiseDispute) - optional, uses DISPUTER_PRIVATE_KEY as second wallet ---
   log("11. raiseDispute(tokenId, reason)");
@@ -196,6 +252,7 @@ async function main() {
       args: [],
       value: minStake,
       account: mainAccount,
+      nonce: await getNextNonce(publicClient, mainAccount),
     });
     log("   tx: " + regArbTxHash);
     await publicClient.waitForTransactionReceipt({ hash: regArbTxHash });

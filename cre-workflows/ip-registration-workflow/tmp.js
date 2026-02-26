@@ -17101,6 +17101,28 @@ var MODRED_IP_EVENTS_ABI = parseAbi([
 function eventTopic0(signature) {
   return keccak256(toBytes(signature));
 }
+var IPFS_GATEWAY = "https://gateway.pinata.cloud/ipfs";
+function metadataWithImage(ipHash, metadata) {
+  const cid = ipHash.replace(/^ipfs:\/\//, "").split("/")[0];
+  const imageUrl = `${IPFS_GATEWAY}/${cid}`;
+  if (!metadata.trim().startsWith("{"))
+    return metadata;
+  try {
+    const obj = JSON.parse(metadata);
+    let changed = false;
+    if (obj.image === undefined || obj.image === null) {
+      obj.image = imageUrl;
+      changed = true;
+    }
+    if (obj.description === undefined || obj.description === null) {
+      obj.description = typeof obj.name === "string" ? String(obj.name) : "IP asset registered via CRE workflow";
+      changed = true;
+    }
+    if (changed)
+      return JSON.stringify(obj);
+  } catch {}
+  return metadata;
+}
 var onCronTrigger = (runtime2) => {
   const evmConfig = runtime2.config.evms[0];
   if (!evmConfig?.consumerAddress || evmConfig.consumerAddress.startsWith("REPLACE_")) {
@@ -17139,34 +17161,10 @@ var onCronTrigger = (runtime2) => {
   }
   const beneficiary = demo.beneficiary;
   const evmClient = new ClientCapability(network248.chainSelector.selector);
-  let nextTokenIdBigInt = null;
+  let actualTokenIdBigInt = null;
   const modredIPAddress = evmConfig.modredIPAddress;
-  if (modredIPAddress) {
-    try {
-      const callData = encodeFunctionData({
-        abi: MODRED_IP_ABI,
-        functionName: "nextTokenId",
-        args: []
-      });
-      const contractCall = evmClient.callContract(runtime2, {
-        call: encodeCallMsg({
-          from: zeroAddress,
-          to: modredIPAddress,
-          data: callData
-        }),
-        blockNumber: LAST_FINALIZED_BLOCK_NUMBER
-      }).result();
-      nextTokenIdBigInt = decodeFunctionResult({
-        abi: MODRED_IP_ABI,
-        functionName: "nextTokenId",
-        data: bytesToHex(contractCall.data)
-      });
-      runtime2.log(`Read nextTokenId: ${String(nextTokenIdBigInt)}`);
-    } catch (e) {
-      runtime2.log(`EVM read nextTokenId skipped: ${e instanceof Error ? e.message : String(e)}`);
-    }
-  }
-  const registerParams = encodeAbiParameters(parseAbiParameters("address beneficiary, string ipHash, string metadata, bool isEncrypted"), [beneficiary, demo.ipHash, demo.metadata, demo.isEncrypted]);
+  const metadataForContract = metadataWithImage(demo.ipHash, demo.metadata);
+  const registerParams = encodeAbiParameters(parseAbiParameters("address beneficiary, string ipHash, string metadata, bool isEncrypted"), [beneficiary, demo.ipHash, metadataForContract, demo.isEncrypted]);
   const registerReportData = encodeAbiParameters(parseAbiParameters("uint8 instructionType, bytes params"), [INSTRUCTION_REGISTER_IP, registerParams]);
   const reportResponse1 = runtime2.report({
     encodedPayload: hexToBase64(registerReportData),
@@ -17181,6 +17179,31 @@ var onCronTrigger = (runtime2) => {
   }).result();
   const registerTxHash = writeResult1.txHash ? bytesToHex(writeResult1.txHash) : null;
   runtime2.log(`Step 1 – Register IP tx: ${registerTxHash ?? "(no tx in simulation)"}`);
+  if (modredIPAddress && registerTxHash) {
+    try {
+      const callData = encodeFunctionData({
+        abi: MODRED_IP_ABI,
+        functionName: "nextTokenId",
+        args: []
+      });
+      const contractCall = evmClient.callContract(runtime2, {
+        call: encodeCallMsg({
+          from: zeroAddress,
+          to: modredIPAddress,
+          data: callData
+        })
+      }).result();
+      const nextAfterRegister = decodeFunctionResult({
+        abi: MODRED_IP_ABI,
+        functionName: "nextTokenId",
+        data: bytesToHex(contractCall.data)
+      });
+      actualTokenIdBigInt = nextAfterRegister - 1n;
+      runtime2.log(`Actual tokenId (from nextTokenId-1 after register): ${String(actualTokenIdBigInt)}`);
+    } catch (e) {
+      runtime2.log(`EVM read nextTokenId after register skipped: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
   const result = {
     externalApiFetched: true,
     beneficiary: demo.beneficiary
@@ -17188,7 +17211,7 @@ var onCronTrigger = (runtime2) => {
   if (registerTxHash != null)
     result.registerTxHash = registerTxHash;
   const license = runtime2.config.demoLicense;
-  const tokenIdForLicense = nextTokenIdBigInt != null ? Number(nextTokenIdBigInt) : null;
+  const tokenIdForLicense = actualTokenIdBigInt != null ? Number(actualTokenIdBigInt) : null;
   if (license && tokenIdForLicense != null) {
     const licenseParams = encodeAbiParameters(parseAbiParameters("uint256 tokenId, address licensee, uint256 royaltyPercentage, uint256 duration, bool commercialUse, string terms"), [
       BigInt(tokenIdForLicense),
@@ -17217,7 +17240,7 @@ var onCronTrigger = (runtime2) => {
       result.licenseTxHash = licenseTxHash;
   }
   const apiUrl = runtime2.config.apiUrl?.replace(/\/$/, "") ?? "";
-  const tokenIdForYakoa = nextTokenIdBigInt != null ? Number(nextTokenIdBigInt) : null;
+  const tokenIdForYakoa = actualTokenIdBigInt != null ? Number(actualTokenIdBigInt) : null;
   const contractForYakoa = modredIPAddress ?? evmConfig.consumerAddress;
   if (apiUrl && registerTxHash && tokenIdForYakoa != null && contractForYakoa && !contractForYakoa.startsWith("REPLACE_")) {
     const yakoaPayload = {

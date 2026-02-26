@@ -20,7 +20,6 @@ import {
   bytesToHex,
   consensusMedianAggregation,
   encodeCallMsg,
-  LAST_FINALIZED_BLOCK_NUMBER,
   type NodeRuntime,
   type Runtime,
 } from "@chainlink/cre-sdk";
@@ -57,6 +56,35 @@ const MODRED_IP_EVENTS_ABI = parseAbi([
 
 function eventTopic0(signature: string): `0x${string}` {
   return keccak256(toBytes(signature));
+}
+
+/** Same gateway as scripts/test-contract-features (config.ts) so Basescan shows the image like test script. */
+const IPFS_GATEWAY = "https://gateway.pinata.cloud/ipfs";
+
+/**
+ * Ensure metadata JSON includes an "image" URL derived from ipHash so NFT explorers (e.g. Basescan) can display it.
+ * Matches behavior of scripts/test-contract-features (config.ts). Also ensures "description" exists for explorer display.
+ */
+function metadataWithImage(ipHash: string, metadata: string): string {
+  const cid = ipHash.replace(/^ipfs:\/\//, "").split("/")[0];
+  const imageUrl = `${IPFS_GATEWAY}/${cid}`;
+  if (!metadata.trim().startsWith("{")) return metadata;
+  try {
+    const obj = JSON.parse(metadata) as Record<string, unknown>;
+    let changed = false;
+    if (obj.image === undefined || obj.image === null) {
+      obj.image = imageUrl;
+      changed = true;
+    }
+    if (obj.description === undefined || obj.description === null) {
+      obj.description = typeof obj.name === "string" ? String(obj.name) : "IP asset registered via CRE workflow";
+      changed = true;
+    }
+    if (changed) return JSON.stringify(obj);
+  } catch {
+    // leave as-is
+  }
+  return metadata;
 }
 
 type EvmConfig = {
@@ -148,40 +176,14 @@ const onCronTrigger = (runtime: Runtime<Config>): WorkflowResult => {
   const evmClient = new EVMClient(network.chainSelector.selector);
 
   // Step 1: Register IP asset (on-chain)
-  // EVM read nextTokenId so we know the tokenId after registration (for license + Yakoa)
-  let nextTokenIdBigInt: bigint | null = null;
+  // We will derive the actual tokenId after the register tx (see below) so license and Yakoa use the correct id.
+  let actualTokenIdBigInt: bigint | null = null;
   const modredIPAddress = evmConfig.modredIPAddress;
-  if (modredIPAddress) {
-    try {
-      const callData = encodeFunctionData({
-        abi: MODRED_IP_ABI,
-        functionName: "nextTokenId",
-        args: [],
-      });
-      const contractCall = evmClient
-        .callContract(runtime, {
-          call: encodeCallMsg({
-            from: zeroAddress,
-            to: modredIPAddress as Address,
-            data: callData,
-          }),
-          blockNumber: LAST_FINALIZED_BLOCK_NUMBER,
-        })
-        .result();
-      nextTokenIdBigInt = decodeFunctionResult({
-        abi: MODRED_IP_ABI,
-        functionName: "nextTokenId",
-        data: bytesToHex(contractCall.data),
-      }) as bigint;
-      runtime.log(`Read nextTokenId: ${String(nextTokenIdBigInt)}`);
-    } catch (e) {
-      runtime.log(`EVM read nextTokenId skipped: ${e instanceof Error ? e.message : String(e)}`);
-    }
-  }
 
+  const metadataForContract = metadataWithImage(demo.ipHash, demo.metadata);
   const registerParams = encodeAbiParameters(
     parseAbiParameters("address beneficiary, string ipHash, string metadata, bool isEncrypted"),
-    [beneficiary, demo.ipHash, demo.metadata, demo.isEncrypted]
+    [beneficiary, demo.ipHash, metadataForContract, demo.isEncrypted]
   );
   const registerReportData = encodeAbiParameters(
     parseAbiParameters("uint8 instructionType, bytes params"),
@@ -205,6 +207,36 @@ const onCronTrigger = (runtime: Runtime<Config>): WorkflowResult => {
   const registerTxHash = writeResult1.txHash ? bytesToHex(writeResult1.txHash) : null;
   runtime.log(`Step 1 – Register IP tx: ${registerTxHash ?? "(no tx in simulation)"}`);
 
+  // Derive actual tokenId from chain state after register (use latest block so we see our tx, not stale finalized)
+  if (modredIPAddress && registerTxHash) {
+    try {
+      const callData = encodeFunctionData({
+        abi: MODRED_IP_ABI,
+        functionName: "nextTokenId",
+        args: [],
+      });
+      const contractCall = evmClient
+        .callContract(runtime, {
+          call: encodeCallMsg({
+            from: zeroAddress,
+            to: modredIPAddress as Address,
+            data: callData,
+          }),
+          // Omit blockNumber so SDK uses LATEST_BLOCK_NUMBER and we see the token we just registered
+        })
+        .result();
+      const nextAfterRegister = decodeFunctionResult({
+        abi: MODRED_IP_ABI,
+        functionName: "nextTokenId",
+        data: bytesToHex(contractCall.data),
+      }) as bigint;
+      actualTokenIdBigInt = nextAfterRegister - 1n;
+      runtime.log(`Actual tokenId (from nextTokenId-1 after register): ${String(actualTokenIdBigInt)}`);
+    } catch (e) {
+      runtime.log(`EVM read nextTokenId after register skipped: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+
   const result: WorkflowResult = {
     externalApiFetched: true,
     beneficiary: demo.beneficiary,
@@ -213,7 +245,7 @@ const onCronTrigger = (runtime: Runtime<Config>): WorkflowResult => {
 
   // Step 2: Mint license for the IP asset (on-chain)
   const license = runtime.config.demoLicense;
-  const tokenIdForLicense = nextTokenIdBigInt != null ? Number(nextTokenIdBigInt) : null;
+  const tokenIdForLicense = actualTokenIdBigInt != null ? Number(actualTokenIdBigInt) : null;
   if (license && tokenIdForLicense != null) {
     const licenseParams = encodeAbiParameters(
       parseAbiParameters("uint256 tokenId, address licensee, uint256 royaltyPercentage, uint256 duration, bool commercialUse, string terms"),
@@ -253,7 +285,7 @@ const onCronTrigger = (runtime: Runtime<Config>): WorkflowResult => {
 
   // Step 3: Register IP for infringement (backend → Yakoa, same logic as register-ip-to-yakoa.ts)
   const apiUrl = runtime.config.apiUrl?.replace(/\/$/, "") ?? "";
-  const tokenIdForYakoa = nextTokenIdBigInt != null ? Number(nextTokenIdBigInt) : null;
+  const tokenIdForYakoa = actualTokenIdBigInt != null ? Number(actualTokenIdBigInt) : null;
   const contractForYakoa = modredIPAddress ?? evmConfig.consumerAddress;
   if (
     apiUrl &&

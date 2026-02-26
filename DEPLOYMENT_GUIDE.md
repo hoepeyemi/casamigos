@@ -3,7 +3,7 @@
 ## Current Contract Status
 
 The application is currently using the V2 contract:
-- **ModredIP**: `0x7CfdF0580C87d0c379c4a5cDbC46A036E8AF71E3`
+- **ModredIP**: `0x5f3801efa089F9ee664c2Ade045735646A2eAA64`
 - **Contract Key**: `ModredIPModule#ModredIP` (maintained for compatibility)
 - **Status**: ✅ Active and verified to have `registerIP` function
 

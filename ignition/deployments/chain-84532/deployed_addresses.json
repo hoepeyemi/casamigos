@@ -1,4 +1,6 @@
 {
-  "FullStackModule#ERC6551Account": "0xcBcEf6D643d7fbA3E03eCc6bB8FDe880Ba5B0D51",
-  "FullStackModule#ERC6551Registry": "0x5a179d261fD322ecaED06FA9Aa2973980D74322c"
+  "FullStackModule#ERC6551Account": "0x13D0b618517F31aebB10C90a6a4168fB89984Eb7",
+  "FullStackModule#ERC6551Registry": "0x60A1d2CEf7fcdcf97d897ffd7c7908539978880c",
+  "FullStackModule#ModredIP": "0x5f3801efa089F9ee664c2Ade045735646A2eAA64",
+  "FullStackModule#ModredIPCREConsumer": "0x7745346B3e296e58Fd4A5D4E802144f1Facea8a0"
 }
