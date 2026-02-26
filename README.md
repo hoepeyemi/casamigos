@@ -21,6 +21,9 @@
 - [🗺️ Roadmap](#️-roadmap)
 - [💰 Revenue Streams](#-revenue-streams)
 - [🔮 Future Vision](#-future-vision)
+- [Deployed contracts (Base Sepolia)](#deployed-contracts-base-sepolia)
+- [Testing](#-testing)
+- [Get Started](#-get-started)
 
 ---
 
@@ -83,12 +86,24 @@ Casamigos addresses critical pain points in the current IP management landscape:
 - **Registry**: ERC6551Registry for account management
 - **Account**: ERC6551Account for programmable logic
 
+### Deployed contracts (Base Sepolia)
+
+| Contract | Address |
+|----------|---------|
+| **ModredIP** | `0x5f3801efa089F9ee664c2Ade045735646A2eAA64` |
+| **ModredIPCREConsumer** | `0x7745346B3e296e58Fd4A5D4E802144f1Facea8a0` |
+| **ERC6551Registry** | `0x60A1d2CEf7fcdcf97d897ffd7c7908539978880c` |
+| **ERC6551Account** | `0x13D0b618517F31aebB10C90a6a4168fB89984Eb7` |
+
+App and backend read addresses from `app/src/deployed_addresses.json`. CRE Forwarder (Chainlink-hosted) is set in [ignition/constants.ts](ignition/constants.ts) as `0x82300bd7c3958625581cc2f77bc6464dcecdf3e5`; override with `CRE_FORWARDER_ADDRESS` when deploying.
+
 ### CRE (Chainlink Runtime Environment)
 - **Workflow**: `cre-workflows/ip-registration-workflow` – cron + EVM log triggers
-- **Cron flow**: (1) Register IP on-chain → (2) Mint license on-chain → (3) Register IP for infringement (backend → Yakoa)
-- **EVM log trigger**: Listens to ModredIP/Consumer events; stores each event in `backend/data/cre-events.jsonl` (one JSON line per event, `eventName` = tx hash)
+- **Cron flow**: (1) Register IP on-chain → (2) Mint license on-chain → (3) Register IP for infringement (backend → Yakoa). The workflow derives the **actual tokenId** after the register tx (reads `nextTokenId` at latest block) so license and Yakoa use the correct id. Metadata sent on-chain includes an **image** URL (from ipHash) so Base explorer displays the asset image.
+- **EVM log trigger**: Listens for **9 event types** from ModredIP and ModredIPCREConsumer: `IPRegistered`, `IPRegisteredViaCRE`, `LicenseMinted`, `LicenseMintedViaCRE`, `RevenuePaid`, `RoyaltyClaimed`, `DisputeRaised`, `DisputeResolved`, `IPTransferred`. Each matching log is stored in `backend/data/cre-events.jsonl` (one JSON line per event; `eventName` = tx hash).
 - **Backend APIs for CRE**: `POST /api/cre-events` (append events), `GET /api/cre-events` (read stored events), `POST /api/register-ip-yakoa` (register IP with Yakoa after CRE register; same logic as `register-ip-to-yakoa.ts`)
-- See [CRE_INTEGRATION.md](CRE_INTEGRATION.md) and [cre-workflows/README.md](cre-workflows/README.md) for setup and simulation
+- **Simulation**: Run `cre workflow simulate ip-registration-workflow --target staging-settings --broadcast`. Choose **1** (cron) for register + mint + Yakoa, or **2** (EVM log trigger) and provide any transaction hash that emitted one of the 9 events above (e.g. a register or mint tx from a previous run or from [Basescan](https://sepolia.basescan.org/address/0x5f3801efa089F9ee664c2Ade045735646A2eAA64#events)).
+- See [CRE_INTEGRATION.md](CRE_INTEGRATION.md) and [cre-workflows/README.md](cre-workflows/README.md) for setup and simulation.
 
 **Files that use Chainlink (CRE / Forwarder):**
 
@@ -361,6 +376,14 @@ The founders experienced firsthand the challenges of IP management:
 
 ---
 
+## 🧪 Testing
+
+- **Contract features (on Base Sepolia):** `yarn test:contract-features` runs register IP, mint license, pay revenue, claim royalties, arbitrator steps, and optional infringement check. Requires `TEST_PRIVATE_KEY` in root `.env`. The script derives the new tokenId from the **IPRegistered** event and uses **pending** nonce with short delays after each tx to avoid "nonce too low" errors. See [TESTING.md](TESTING.md) and `scripts/test-contract-features/README.md`.
+- **CRE workflow:** `cre workflow simulate ip-registration-workflow --target staging-settings --broadcast` (cron trigger = register + mint + Yakoa; log trigger = replay an event for `cre-events.jsonl`). See [cre-workflows/README.md](cre-workflows/README.md) and [TESTING.md](TESTING.md).
+- **Deploy:** Full-stack deploy and address updates are in [DEPLOY_INSTRUCTIONS.md](DEPLOY_INSTRUCTIONS.md).
+
+---
+
 ## 🚀 Get Started
 
 ### Quick Start
@@ -372,9 +395,14 @@ git clone https://github.com/casamigos/casamigos-platform.git
 cd casamigos-platform
 npm install
 
+# Optional: copy .env.example to .env and set TEST_PRIVATE_KEY (for test:contract-features)
+# and RPC_URL if needed
+
 # Start development server
 npm run dev
 ```
+
+To test contracts on Base Sepolia: `yarn test:contract-features` (see [TESTING.md](TESTING.md)). To simulate the CRE workflow: `cre workflow simulate ip-registration-workflow --target staging-settings --broadcast`.
 
 
 ---
